@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import SearchSection from './components/SearchSection';
 import ComparisonMatrix from './components/ComparisonMatrix';
 import SubstituteSection from './components/SubstituteSection';
 import PincodeModal from './components/PincodeModal';
 import StripScannerModal from './components/StripScannerModal';
-import { searchMedicines, searchByComposition, getPopularMedicines, getPopularCompositions } from './utils/api';
+import ReportIssueModal from './components/ReportIssueModal';
+import SuggestFeatureModal from './components/SuggestFeatureModal';
+import ChangelogModal from './components/ChangelogModal';
+import PlatformAvailabilityBar from './components/PlatformAvailabilityBar';
+import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability } from './utils/api';
 import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
 export default function App() {
@@ -15,26 +19,34 @@ export default function App() {
   const [pincode, setPincode] = useState('560001');
   const [city, setCity] = useState('Bengaluru');
   const [searchMode, setSearchMode] = useState('name'); // 'name' | 'composition'
-  const [query, setQuery] = useState('Dolo 650');
-  const [activeMedicine, setActiveMedicine] = useState('Dolo 650');
+  const [query, setQuery] = useState('');
+  const [activeMedicine, setActiveMedicine] = useState('');
   const [activeComposition, setActiveComposition] = useState(null);
   const [exactMatchOnly, setExactMatchOnly] = useState(true);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [popularMedicines, setPopularMedicines] = useState([
-    { name: 'Dolo 650' },
-    { name: 'Telma 40' },
-    { name: 'Augmentin 625 Duo' },
-    { name: 'Glycomet GP 2' },
-    { name: 'Pan 40' },
-    { name: 'Montair LC' },
-    { name: 'Rosuvas 10' }
-  ]);
+
+  // Recent searches – persisted in localStorage, capped at 5
+  const [popularMedicines, setPopularMedicines] = useState(() => {
+    try {
+      const saved = localStorage.getItem('medcompare_recent_searches');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [popularCompositions, setPopularCompositions] = useState([]);
 
   const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
+  const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
+
+  // Platform delivery availability for current pincode
+  const [platformAvailability, setPlatformAvailability] = useState({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
 
   // Sync theme attribute to document
   useEffect(() => {
@@ -42,14 +54,8 @@ export default function App() {
     localStorage.setItem('medcompare_theme', theme);
   }, [theme]);
 
-  // Load popular medicines and popular composition formulations list
+  // Load popular composition formulations list from server
   useEffect(() => {
-    getPopularMedicines()
-      .then((meds) => {
-        if (meds && meds.length > 0) setPopularMedicines(meds);
-      })
-      .catch(() => {});
-
     getPopularCompositions()
       .then((comps) => {
         if (comps && comps.length > 0) setPopularCompositions(comps);
@@ -57,9 +63,44 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  // Initial search on load
-  useEffect(() => {
-    executeSearch('Dolo 650', pincode);
+  // Persist and update recent searches list (max 5, newest first)
+  const recordSearch = (name) => {
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    setPopularMedicines((prev) => {
+      const filtered = prev.filter((m) => m.name.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [{ name: trimmed }, ...filtered].slice(0, 5);
+      try {
+        localStorage.setItem('medcompare_recent_searches', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  // Derive availability from a search result (avoids a duplicate API call)
+  const deriveAvailabilityFromData = useCallback((searchData) => {
+    if (!searchData || !searchData.platforms) return;
+    const derived = {};
+    for (const [key, platform] of Object.entries(searchData.platforms)) {
+      derived[key] = {
+        platformName: platform.platformName,
+        available: platform.available === true || platform.count > 0
+      };
+    }
+    setPlatformAvailability(derived);
+  }, []);
+
+  // Explicit availability check (used on pincode change when no search is active)
+  const runAvailabilityCheck = useCallback(async (pin) => {
+    setAvailabilityLoading(true);
+    try {
+      const av = await checkPlatformAvailability(pin);
+      setPlatformAvailability(av);
+    } catch {
+      // silently fail – bar just stays empty
+    } finally {
+      setAvailabilityLoading(false);
+    }
   }, []);
 
   const executeSearch = async (searchQuery, targetPin = pincode) => {
@@ -74,6 +115,8 @@ export default function App() {
     try {
       const result = await searchMedicines(q, targetPin);
       setData(result);
+      recordSearch(q);
+      deriveAvailabilityFromData(result);
     } catch (err) {
       console.error('Search error:', err);
       setError('Unable to fetch live prices from pharmacy partners. Please try again.');
@@ -114,6 +157,9 @@ export default function App() {
       executeCompositionSearch(activeComposition, exactMatchOnly, newPin);
     } else if (activeMedicine) {
       executeSearch(activeMedicine, newPin);
+    } else {
+      // No active search yet – just check availability for the new pin
+      runAvailabilityCheck(newPin);
     }
   };
 
@@ -133,6 +179,9 @@ export default function App() {
         pincode={pincode}
         city={city}
         onOpenPincode={() => setIsPincodeModalOpen(true)}
+        onOpenReportIssue={() => setIsReportModalOpen(true)}
+        onOpenSuggestFeature={() => setIsSuggestModalOpen(true)}
+        onOpenChangelogs={() => setIsChangelogModalOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -151,6 +200,14 @@ export default function App() {
           popularCompositions={popularCompositions}
           activeMedicine={activeMedicine}
           activeIngredients={activeComposition}
+        />
+
+        {/* Platform Delivery Availability Bar */}
+        <PlatformAvailabilityBar
+          availability={platformAvailability}
+          loading={availabilityLoading}
+          pincode={pincode}
+          onRefresh={() => runAvailabilityCheck(pincode)}
         />
 
         {/* Loading Spinner */}
@@ -320,6 +377,22 @@ export default function App() {
         isOpen={isScannerModalOpen}
         onClose={() => setIsScannerModalOpen(false)}
         onDetectedMedicine={handleDetectedMedicine}
+      />
+
+      <ReportIssueModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        currentMedicine={activeMedicine}
+      />
+
+      <SuggestFeatureModal
+        isOpen={isSuggestModalOpen}
+        onClose={() => setIsSuggestModalOpen(false)}
+      />
+
+      <ChangelogModal
+        isOpen={isChangelogModalOpen}
+        onClose={() => setIsChangelogModalOpen(false)}
       />
     </div>
   );

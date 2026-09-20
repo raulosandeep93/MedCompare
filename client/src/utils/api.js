@@ -84,3 +84,9 @@ export async function getPopularCompositions() {
   return json.data || [];
 }
 
+export async function checkPlatformAvailability(pincode = '560001') {
+  const res = await fetch(apiUrl(`/api/check-availability?pincode=${encodeURIComponent(pincode)}`));
+  if (!res.ok) throw new Error('Availability check failed');
+  const json = await res.json();
+  return json.availability || {};
+}

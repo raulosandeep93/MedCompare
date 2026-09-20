@@ -259,6 +259,210 @@ input {
   background: var(--bg-card-hover);
 }
 
+/* ============================================================
+   Platform Delivery Availability Bar
+   ============================================================ */
+.availability-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.availability-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  gap: 0.5rem;
+}
+
+.availability-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.availability-bar-title strong {
+  color: var(--text-main);
+}
+
+.availability-summary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 0.25rem;
+}
+
+.availability-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.availability-refresh-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--primary-500);
+  border-color: var(--primary-400);
+}
+
+.availability-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+/* Base pill */
+.avail-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* GREEN — platform delivers to this pincode */
+.avail-pill.avail-green {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #059669;
+}
+
+[data-theme="dark"] .avail-pill.avail-green {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.avail-pill.avail-green:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25);
+}
+
+/* RED — platform does not deliver */
+.avail-pill.avail-red {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+  color: #dc2626;
+  opacity: 0.75;
+}
+
+[data-theme="dark"] .avail-pill.avail-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  opacity: 0.85;
+}
+
+/* Loading skeleton pill */
+.avail-pill.avail-loading {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+  opacity: 0.6;
+  animation: pulse-fade 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.3; }
+}
+
+/* Spinning loader icon inside loading pills */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .availability-bar {
+    padding: 0.6rem 0.75rem;
+  }
+  .avail-pill span {
+    font-size: 0.6875rem;
+  }
+}
+
+/* Header nav action buttons (Report / Suggest / Changelog) */
+.header-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.header-nav-btn:hover {
+  background: var(--bg-card-hover);
+}
+
+.header-nav-btn.report:hover {
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.header-nav-btn.suggest:hover {
+  border-color: #3b82f6;
+  color: #2563eb;
+}
+
+.header-nav-btn.changelog:hover {
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+/* Hide label text on small screens, show only icon */
+@media (max-width: 900px) {
+  .header-nav-btn span {
+    display: none;
+  }
+  .header-nav-btn {
+    padding: 0.45rem 0.55rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-nav-btn {
+    display: none;
+  }
+}
+
 .theme-toggle-btn {
   width: 38px;
   height: 38px;

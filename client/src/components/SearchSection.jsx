@@ -210,25 +210,27 @@ export default function SearchSection({
               </button>
             </form>
 
-            {/* Quick Medicine Suggestion Chips */}
-            <div className="quick-chips-wrap">
-              <span className="chips-label">Popular Searches:</span>
-              {popularMedicines.map((med) => {
-                const isActive = activeMedicine?.toLowerCase() === med.name.toLowerCase();
-                return (
-                  <button
-                    key={med.name}
-                    className={`chip-btn ${isActive ? 'active' : ''}`}
-                    onClick={() => {
-                      setQuery(med.name);
-                      onSearch(med.name);
-                    }}
-                  >
-                    {med.name}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Recent searches chips – only shown after the user has searched */}
+            {popularMedicines && popularMedicines.length > 0 && (
+              <div className="quick-chips-wrap">
+                <span className="chips-label">Recent Searches:</span>
+                {popularMedicines.map((med) => {
+                  const isActive = activeMedicine?.toLowerCase() === med.name.toLowerCase();
+                  return (
+                    <button
+                      key={med.name}
+                      className={`chip-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setQuery(med.name);
+                        onSearch(med.name);
+                      }}
+                    >
+                      {med.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </>
         ) : (
           /* Mode 2: Multi-Ingredient / Composition Builder */

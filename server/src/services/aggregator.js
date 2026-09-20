@@ -150,6 +150,7 @@ export class MedicineAggregator {
           platformName: 'Apollo Pharmacy',
           platformId: 'apollo',
           count: apolloItems.length,
+          available: apolloItems.length > 0,
           topItem: topApollo,
           items: apolloItems
         },
@@ -157,6 +158,7 @@ export class MedicineAggregator {
           platformName: 'Truemeds',
           platformId: 'truemeds',
           count: truemedsItems.length,
+          available: truemedsItems.length > 0,
           topItem: topTruemeds,
           items: truemedsItems
         },
@@ -164,6 +166,7 @@ export class MedicineAggregator {
           platformName: 'PlatinumRx',
           platformId: 'platinumrx',
           count: platinumItems.length,
+          available: platinumItems.length > 0,
           topItem: topPlatinum,
           items: platinumItems
         },
@@ -171,6 +174,7 @@ export class MedicineAggregator {
           platformName: 'PharmEasy',
           platformId: 'pharmeasy',
           count: pharmeasyItems.length,
+          available: pharmeasyItems.length > 0,
           topItem: topPharmEasy,
           items: pharmeasyItems
         },
@@ -178,6 +182,7 @@ export class MedicineAggregator {
           platformName: 'Tata 1mg',
           platformId: 'onemg',
           count: onemgItems.length,
+          available: onemgItems.length > 0,
           topItem: topOneMg,
           items: onemgItems
         },
@@ -185,6 +190,7 @@ export class MedicineAggregator {
           platformName: 'Netmeds',
           platformId: 'netmeds',
           count: netmedsItems.length,
+          available: netmedsItems.length > 0,
           topItem: topNetmeds,
           items: netmedsItems
         },
@@ -192,6 +198,7 @@ export class MedicineAggregator {
           platformName: 'Zepto',
           platformId: 'zepto',
           count: zeptoItems.length,
+          available: zeptoItems.length > 0,
           topItem: topZepto,
           items: zeptoItems
         },
@@ -199,6 +206,7 @@ export class MedicineAggregator {
           platformName: 'Amazon Pharmacy',
           platformId: 'amazon',
           count: amazonItems.length,
+          available: amazonItems.length > 0,
           topItem: topAmazon,
           items: amazonItems
         }

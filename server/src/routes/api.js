@@ -120,6 +120,30 @@ router.get('/popular-medicines', (req, res) => {
   res.json({ success: true, data: POPULAR_MEDICINES });
 });
 
+// 4. Platform Delivery Availability check for a pincode
+// Runs a lightweight probe search to determine which platforms service the given pincode.
+// Results are cached server-side for 10 minutes.
+router.get('/check-availability', async (req, res) => {
+  try {
+    const { pincode = '560001' } = req.query;
+    // Use a common OTC medicine as probe; results discarded, only availability matters
+    const data = await aggregator.searchAll('paracetamol', pincode);
+    const availability = {};
+    if (data && data.platforms) {
+      for (const [key, platform] of Object.entries(data.platforms)) {
+        availability[key] = {
+          platformName: platform.platformName,
+          available: platform.available === true || platform.count > 0
+        };
+      }
+    }
+    res.json({ success: true, pincode, availability });
+  } catch (error) {
+    console.error('[API /check-availability] Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 3. Medicine Strip Photo Upload & OCR Extraction
 router.post('/scan-strip', upload.single('stripImage'), async (req, res) => {
   try {
