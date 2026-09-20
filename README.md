@@ -125,6 +125,21 @@ npm run dev
 ```
 Open **`http://localhost:3000`** in your browser to view the application.
 
+### GitHub Pages deployment
+
+The frontend lives in `client/`, so GitHub Pages must publish its Vite build output
+instead of the repository root. The included GitHub Actions workflow builds and
+deploys `client/dist` whenever `main` is pushed.
+
+In GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+After the next push, the site will be available at
+`https://raulosandeep93.github.io/MedCompare/`.
+
+GitHub Pages is static hosting and cannot run the Express API in `server/`. To
+enable live searches on the hosted page, deploy `server/` to a Node-compatible
+host and add a repository variable named `VITE_API_BASE_URL` containing that
+server's public URL (for example, `https://api.example.com`).
+
 ---
 
 ## 📖 Detailed Documentation
