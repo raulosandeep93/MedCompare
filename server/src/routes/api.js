@@ -3,6 +3,7 @@ import multer from 'multer';
 import { MedicineAggregator } from '../services/aggregator.js';
 import { extractMedicineFromImage, parsePharmaText } from '../services/ocrService.js';
 import { lookupPincode, getPopularPincodes } from '../services/pincodeService.js';
+import { POPULAR_COMPOSITIONS } from '../services/compositionService.js';
 
 const router = express.Router();
 const aggregator = new MedicineAggregator();
@@ -44,6 +45,60 @@ router.get('/search', async (req, res) => {
       message: error.message
     });
   }
+});
+
+// 1b. Search by Composition / Multi-Salt Combinations
+router.get('/search/composition', async (req, res) => {
+  try {
+    const { ingredients, pincode = '560001', exactMatch = 'true' } = req.query;
+    if (!ingredients) {
+      return res.status(400).json({ error: 'Query parameter "ingredients" is required.' });
+    }
+
+    const isExact = exactMatch === 'true' || exactMatch === true || exactMatch === '1';
+    const ingList = typeof ingredients === 'string'
+      ? ingredients.split(/[+,]/).map(s => s.trim()).filter(Boolean)
+      : ingredients;
+
+    const data = await aggregator.searchByComposition(ingList, pincode, { exactMatch: isExact });
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('[API /search/composition] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search by medicine composition',
+      message: error.message
+    });
+  }
+});
+
+router.post('/search/composition', async (req, res) => {
+  try {
+    const { ingredients, pincode = '560001', exactMatch = true } = req.body;
+    if (!ingredients || (Array.isArray(ingredients) && ingredients.length === 0)) {
+      return res.status(400).json({ error: 'Body field "ingredients" is required.' });
+    }
+
+    const data = await aggregator.searchByComposition(ingredients, pincode, { exactMatch });
+    res.json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('[API POST /search/composition] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search by medicine composition',
+      message: error.message
+    });
+  }
+});
+
+router.get('/popular-compositions', (req, res) => {
+  res.json({ success: true, data: POPULAR_COMPOSITIONS });
 });
 
 // 2. Pincode verification & delivery SLA

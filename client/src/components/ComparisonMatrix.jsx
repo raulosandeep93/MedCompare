@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ComparisonCard from './ComparisonCard';
-import { Award, Zap, Tag, LayoutGrid, Table, MapPin, Filter } from 'lucide-react';
+import { Award, Zap, Tag, LayoutGrid, Table, MapPin, Filter, FlaskConical } from 'lucide-react';
 
 const ORDERED_PLATFORMS = [
   'apollo',
@@ -49,7 +49,18 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
       <div className="comparison-highlight-banner">
         <div className="banner-header">
           <div>
-            <h2>Price & Delivery Comparison for "{data.query}"</h2>
+            <h2>
+              {data.searchMode === 'composition' ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ color: '#10b981', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <FlaskConical size={20} /> Exact Formulation:
+                  </span>
+                  <span>{data.query}</span>
+                </span>
+              ) : (
+                `Price & Delivery Comparison for "${data.query}"`
+              )}
+            </h2>
             <div className="pincode-context" style={{ marginTop: '0.25rem' }}>
               <MapPin size={13} color="#10b981" />
               <span>Location: <strong>{pincode}</strong> {city ? `(${city})` : ''}</span>

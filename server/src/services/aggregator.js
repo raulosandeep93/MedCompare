@@ -7,6 +7,7 @@ import { OneMgAdapter } from '../adapters/onemg.js';
 import { NetmedsAdapter } from '../adapters/netmeds.js';
 import { ZeptoAdapter } from '../adapters/zepto.js';
 import { AmazonPharmacyAdapter } from '../adapters/amazon.js';
+import { buildCompositionQuery, evaluateCompositionMatch, POPULAR_COMPOSITIONS } from './compositionService.js';
 
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 }); // 5 minutes cache
 
@@ -237,6 +238,160 @@ export class MedicineAggregator {
         } : null
       },
       genericSubstitutes: allSubstitutes.slice(0, 8)
+    };
+
+    cache.set(cacheKey, response);
+    return response;
+  }
+
+  async searchByComposition(ingredients = [], pincode = '560001', options = {}) {
+    const exactMatch = options.exactMatch !== false; // Default true
+
+    // Normalize ingredients array
+    let ingList = [];
+    if (typeof ingredients === 'string') {
+      ingList = ingredients.split(/[+,]/).map(s => s.trim()).filter(Boolean);
+    } else if (Array.isArray(ingredients)) {
+      ingList = ingredients
+        .map(i => (typeof i === 'string' ? i.trim() : (i.name || '').trim()))
+        .filter(Boolean);
+    }
+
+    if (!ingList.length) {
+      return {
+        query: '',
+        pincode,
+        searchMode: 'composition',
+        platforms: {},
+        comparison: null,
+        genericSubstitutes: [],
+        compositionInfo: {
+          requestedIngredients: [],
+          exactMatch,
+          totalMatches: 0
+        }
+      };
+    }
+
+    const cacheKey = `comp_${ingList.map(s => s.toLowerCase()).sort().join('_')}_${pincode}_${exactMatch}`;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Determine queries using composition query builder
+    const { primaryQuery, saltQuery, preset } = buildCompositionQuery(ingList);
+
+    // Perform aggregated search using the primary formulation query
+    const baseResult = await this.searchAll(primaryQuery, pincode);
+
+    // Re-evaluate each platform's items against the exact ingredients
+    const updatedPlatforms = {};
+    const exactMatchTopItems = [];
+
+    for (const [platformKey, pData] of Object.entries(baseResult.platforms || {})) {
+      const items = Array.isArray(pData.items) ? pData.items : [];
+
+      const evaluatedItems = items.map(item => {
+        const evalResult = evaluateCompositionMatch(item, ingList, exactMatch);
+        return {
+          ...item,
+          isExactMatch: evalResult.isExactMatch,
+          matchedIngredients: evalResult.matchedIngredients,
+          missingIngredients: evalResult.missingIngredients,
+          matchScore: evalResult.matchScore,
+          isKnownFormulationMatch: evalResult.isKnownFormulationMatch,
+          matchedCompositionLabel: evalResult.matchedCompositionLabel
+        };
+      });
+
+      // Filter exact matches if requested
+      const exactItems = evaluatedItems.filter(i => i.isExactMatch);
+      const itemsToUse = exactMatch ? exactItems : evaluatedItems.sort((a, b) => b.matchScore - a.matchScore);
+
+      const topItem = itemsToUse[0] || null;
+      if (topItem && (topItem.isExactMatch || !exactMatch)) {
+        exactMatchTopItems.push(topItem);
+      }
+
+      updatedPlatforms[platformKey] = {
+        ...pData,
+        count: itemsToUse.length,
+        topItem,
+        items: itemsToUse
+      };
+    }
+
+    // Re-evaluate comparison winners among the matched top items
+    let lowestUnitPriceItem = null;
+    let lowestPackPriceItem = null;
+    let highestDiscountItem = null;
+    let fastestDeliveryItem = null;
+
+    if (exactMatchTopItems.length > 0) {
+      const inStockItems = exactMatchTopItems.filter(i => i.inStock);
+      const candidates = inStockItems.length > 0 ? inStockItems : exactMatchTopItems;
+
+      lowestUnitPriceItem = candidates.reduce((min, cur) =>
+        cur.unitPrice < min.unitPrice ? cur : min, candidates[0]);
+
+      lowestPackPriceItem = candidates.reduce((min, cur) =>
+        cur.sellingPrice < min.sellingPrice ? cur : min, candidates[0]);
+
+      highestDiscountItem = candidates.reduce((max, cur) =>
+        cur.discountPercent > max.discountPercent ? cur : max, candidates[0]);
+
+      fastestDeliveryItem = candidates.find(i => i.deliverySpeedTier === 'ultra-fast') ||
+        candidates.find(i => i.deliverySpeedTier === 'fast') ||
+        candidates[0];
+    }
+
+    const response = {
+      ...baseResult,
+      query: ingList.join(' + '),
+      searchMode: 'composition',
+      platforms: updatedPlatforms,
+      comparison: {
+        hasData: exactMatchTopItems.length > 0,
+        lowestUnitPrice: lowestUnitPriceItem ? {
+          platform: lowestUnitPriceItem.platform,
+          platformName: lowestUnitPriceItem.platformName,
+          unitPrice: lowestUnitPriceItem.unitPrice,
+          packSize: lowestUnitPriceItem.packSize,
+          unitType: lowestUnitPriceItem.unitType,
+          sellingPrice: lowestUnitPriceItem.sellingPrice,
+          name: lowestUnitPriceItem.name
+        } : null,
+        lowestPackPrice: lowestPackPriceItem ? {
+          platform: lowestPackPriceItem.platform,
+          platformName: lowestPackPriceItem.platformName,
+          sellingPrice: lowestPackPriceItem.sellingPrice,
+          packSize: lowestPackPriceItem.packSize,
+          unitType: lowestPackPriceItem.unitType,
+          name: lowestPackPriceItem.name
+        } : null,
+        highestDiscount: highestDiscountItem ? {
+          platform: highestDiscountItem.platform,
+          platformName: highestDiscountItem.platformName,
+          discountPercent: highestDiscountItem.discountPercent,
+          sellingPrice: highestDiscountItem.sellingPrice,
+          mrp: highestDiscountItem.mrp,
+          name: highestDiscountItem.name
+        } : null,
+        fastestDelivery: fastestDeliveryItem ? {
+          platform: fastestDeliveryItem.platform,
+          platformName: fastestDeliveryItem.platformName,
+          deliveryEstimate: fastestDeliveryItem.deliveryEstimate,
+          name: fastestDeliveryItem.name
+        } : null
+      },
+      compositionInfo: {
+        requestedIngredients: ingList,
+        exactMatch,
+        totalExactMatches: exactMatchTopItems.length,
+        referenceBrand: preset?.referenceBrand || null,
+        presetCategory: preset?.category || null
+      }
     };
 
     cache.set(cacheKey, response);

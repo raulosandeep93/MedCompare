@@ -59,3 +59,28 @@ export async function scanMedicineStrip({ file, simulatedText }) {
   }
   throw new Error('No file or simulated text provided');
 }
+
+export async function searchByComposition(ingredients, pincode = '560001', options = {}) {
+  const exactMatch = options.exactMatch !== false;
+  const res = await fetch(apiUrl('/api/search/composition'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ingredients,
+      pincode,
+      exactMatch
+    })
+  });
+  if (!res.ok) {
+    throw new Error(`Composition search failed: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+export async function getPopularCompositions() {
+  const res = await fetch(apiUrl('/api/popular-compositions'));
+  const json = await res.json();
+  return json.data || [];
+}
+

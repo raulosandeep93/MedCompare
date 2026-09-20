@@ -5,7 +5,7 @@ import ComparisonMatrix from './components/ComparisonMatrix';
 import SubstituteSection from './components/SubstituteSection';
 import PincodeModal from './components/PincodeModal';
 import StripScannerModal from './components/StripScannerModal';
-import { searchMedicines, getPopularMedicines } from './utils/api';
+import { searchMedicines, searchByComposition, getPopularMedicines, getPopularCompositions } from './utils/api';
 import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
 export default function App() {
@@ -14,8 +14,11 @@ export default function App() {
   });
   const [pincode, setPincode] = useState('560001');
   const [city, setCity] = useState('Bengaluru');
+  const [searchMode, setSearchMode] = useState('name'); // 'name' | 'composition'
   const [query, setQuery] = useState('Dolo 650');
   const [activeMedicine, setActiveMedicine] = useState('Dolo 650');
+  const [activeComposition, setActiveComposition] = useState(null);
+  const [exactMatchOnly, setExactMatchOnly] = useState(true);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,6 +31,7 @@ export default function App() {
     { name: 'Montair LC' },
     { name: 'Rosuvas 10' }
   ]);
+  const [popularCompositions, setPopularCompositions] = useState([]);
 
   const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
@@ -38,11 +42,17 @@ export default function App() {
     localStorage.setItem('medcompare_theme', theme);
   }, [theme]);
 
-  // Load popular medicines list
+  // Load popular medicines and popular composition formulations list
   useEffect(() => {
     getPopularMedicines()
       .then((meds) => {
         if (meds && meds.length > 0) setPopularMedicines(meds);
+      })
+      .catch(() => {});
+
+    getPopularCompositions()
+      .then((comps) => {
+        if (comps && comps.length > 0) setPopularCompositions(comps);
       })
       .catch(() => {});
   }, []);
@@ -59,6 +69,7 @@ export default function App() {
     setLoading(true);
     setError('');
     setActiveMedicine(q);
+    setActiveComposition(null);
 
     try {
       const result = await searchMedicines(q, targetPin);
@@ -71,15 +82,43 @@ export default function App() {
     }
   };
 
+  const executeCompositionSearch = async (ingredients, exactMatch = true, targetPin = pincode) => {
+    if (!ingredients || ingredients.length === 0) return;
+
+    setLoading(true);
+    setError('');
+    setActiveComposition(ingredients);
+    setExactMatchOnly(exactMatch);
+
+    const label = ingredients
+      .map(i => (typeof i === 'string' ? i : i.name))
+      .filter(Boolean)
+      .join(' + ');
+    setActiveMedicine(label);
+
+    try {
+      const result = await searchByComposition(ingredients, targetPin, { exactMatch });
+      setData(result);
+    } catch (err) {
+      console.error('Composition search error:', err);
+      setError('Unable to search formulations from pharmacy partners. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePincodeChange = (newPin, newCity) => {
     setPincode(newPin);
     if (newCity) setCity(newCity);
-    if (activeMedicine) {
+    if (searchMode === 'composition' && activeComposition) {
+      executeCompositionSearch(activeComposition, exactMatchOnly, newPin);
+    } else if (activeMedicine) {
       executeSearch(activeMedicine, newPin);
     }
   };
 
   const handleDetectedMedicine = (detectedName) => {
+    setSearchMode('name');
     setQuery(detectedName);
     executeSearch(detectedName, pincode);
   };
@@ -100,13 +139,18 @@ export default function App() {
 
       <main className="app-container">
         <SearchSection
+          searchMode={searchMode}
+          setSearchMode={setSearchMode}
           query={query}
           setQuery={setQuery}
           onSearch={(q) => executeSearch(q, pincode)}
+          onCompositionSearch={(ingredients, exact) => executeCompositionSearch(ingredients, exact, pincode)}
           onOpenScanner={() => setIsScannerModalOpen(true)}
           loading={loading}
           popularMedicines={popularMedicines}
+          popularCompositions={popularCompositions}
           activeMedicine={activeMedicine}
+          activeIngredients={activeComposition}
         />
 
         {/* Loading Spinner */}

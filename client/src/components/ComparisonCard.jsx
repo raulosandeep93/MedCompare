@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Zap, Award, Tag, Clock, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ExternalLink, Zap, Award, Tag, Clock, ShieldCheck, CheckCircle2, AlertCircle, FlaskConical } from 'lucide-react';
 
 export default function ComparisonCard({ platformKey, platformData, comparisonWinners }) {
   const { platformName, topItem } = platformData;
@@ -65,16 +65,30 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
               {topItem.name}
             </h3>
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {topItem.isExactMatch && (
+              <div className="card-exact-composition-badge">
+                <FlaskConical size={12} />
+                <span>Exact Composition Match</span>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '0.75rem' }}>
               <span className="pack-pill">
                 Pack: <strong>{topItem.packSize} {topItem.unitType}s</strong>
               </span>
               {topItem.manufacturer && (
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   by {topItem.manufacturer}
                 </span>
               )}
             </div>
+
+            {topItem.saltComposition && (
+              <div className="card-salt-text" title={topItem.saltComposition}>
+                <small style={{ color: 'var(--text-subtle)' }}>Salt: </small>
+                {topItem.saltComposition}
+              </div>
+            )}
 
             {/* Pricing Matrix Box */}
             <div className="pricing-matrix-box">
