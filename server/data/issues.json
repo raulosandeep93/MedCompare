@@ -1,0 +1,35 @@
+[
+  {
+    "id": "issue_1790520431338_4ruhs",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "All Stores / General",
+    "medicineName": "Test",
+    "description": "Test",
+    "email": "",
+    "timestamp": "2026-09-27T14:47:11.338Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "issue_1790520174635_tzgsl",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "All Stores / General",
+    "medicineName": "Dolo 650",
+    "description": "Test",
+    "email": "",
+    "timestamp": "2026-09-27T14:42:54.635Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "issue_1790520032978_1vyro",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "Tata 1mg",
+    "medicineName": "Dolo 650",
+    "description": "Price listed as ₹28 on 1mg, but on store site it shows ₹32.",
+    "email": "testuser@example.com",
+    "timestamp": "2026-09-27T14:40:32.978Z",
+    "userAgent": "curl/7.81.0"
+  }
+]

@@ -1,11 +1,40 @@
 import React from 'react';
-import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck } from 'lucide-react';
+import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck, Search, MapPin, Mail, SlidersHorizontal } from 'lucide-react';
 
 const RELEASES = [
   {
+    version: 'v1.3.0',
+    date: 'September 27, 2026',
+    isLatest: true,
+    tag: 'Autocomplete & UX',
+    title: 'Instant Search Autocomplete, Card Carousel, Auto-Geolocation & Issue Reporting',
+    highlights: [
+      {
+        icon: <Search size={15} color="#10b981" />,
+        text: 'Live Autocomplete Suggestions: Real-time dropdown for both "Search by name" and "By composition" with chemical salt vs brand badges, category tags, and full keyboard navigation (arrows + enter).'
+      },
+      {
+        icon: <SlidersHorizontal size={15} color="#3b82f6" />,
+        text: 'Interactive Card Carousel: Replaced static alternative cards with a responsive horizontal carousel showing top 3 medicines with slide controls (‹ / ›) and dot indicators.'
+      },
+      {
+        icon: <MapPin size={15} color="#8b5cf6" />,
+        text: 'Automatic Geolocation: Auto-detects location permission on page landing and reverse-geocodes coordinates into Indian PIN codes, keeping location saved in memory.'
+      },
+      {
+        icon: <Mail size={15} color="#f59e0b" />,
+        text: 'Issue Reporting & Direct Email Dispatch: "Report Issue" now logs reports locally and automatically notifies admin (raulosandeep93@gmail.com) via Resend/Nodemailer.'
+      },
+      {
+        icon: <Sparkles size={15} color="#10b981" />,
+        text: 'Cleaned Input Bar: Streamlined the search box by removing duplicate scan buttons in favor of the dedicated top "Scan Strip" tab.'
+      }
+    ]
+  },
+  {
     version: 'v1.2.0',
     date: 'September 20, 2026',
-    isLatest: true,
+    isLatest: false,
     tag: 'Major Feature',
     title: 'Multi-Ingredient Composition & Chemical Salt Aggregator',
     highlights: [

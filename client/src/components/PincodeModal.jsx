@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, MapPin, CheckCircle, Navigation } from 'lucide-react';
-import { lookupPincode } from '../utils/api';
+import { lookupPincode, reverseGeocodeLocation } from '../utils/api';
 
 const POPULAR_PRESETS = [
   { pin: '560001', city: 'Bengaluru', state: 'Karnataka' },
@@ -16,6 +16,7 @@ const POPULAR_PRESETS = [
 export default function PincodeModal({ isOpen, onClose, currentPincode, onSelectPincode }) {
   const [inputPin, setInputPin] = useState(currentPincode || '560001');
   const [loading, setLoading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -45,6 +46,38 @@ export default function PincodeModal({ isOpen, onClose, currentPincode, onSelect
     }
   };
 
+  const handleDetectGps = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+    setGpsLoading(true);
+    setError('');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const loc = await reverseGeocodeLocation(pos.coords.latitude, pos.coords.longitude);
+          if (loc && loc.pincode) {
+            setInputPin(loc.pincode);
+            onSelectPincode(loc.pincode, loc.city, loc);
+            onClose();
+          } else {
+            setError('Could not resolve PIN code for your coordinates.');
+          }
+        } catch (e) {
+          setError('Failed to auto-detect location. Please try manually.');
+        } finally {
+          setGpsLoading(false);
+        }
+      },
+      (err) => {
+        setError(err.message || 'Location permission was denied.');
+        setGpsLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -62,6 +95,33 @@ export default function PincodeModal({ isOpen, onClose, currentPincode, onSelect
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
             Medicine delivery timelines and store availability vary by pincode across Apollo, Truemeds, and PlatinumRx.
           </p>
+
+          <button
+            type="button"
+            className="gps-detect-btn"
+            onClick={handleDetectGps}
+            disabled={gpsLoading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              width: '100%',
+              padding: '0.65rem',
+              borderRadius: '10px',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              background: 'rgba(16, 185, 129, 0.08)',
+              color: '#10b981',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              cursor: gpsLoading ? 'wait' : 'pointer',
+              marginBottom: '1rem',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Navigation size={15} className={gpsLoading ? 'location-pulse-icon' : ''} />
+            <span>{gpsLoading ? 'Detecting current GPS location...' : 'Use My Current Location (Auto-Detect)'}</span>
+          </button>
 
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
             <input

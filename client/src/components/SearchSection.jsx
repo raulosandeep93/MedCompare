@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Camera, Sparkles, FlaskConical, Plus, X, Layers, CheckCircle2, Pill } from 'lucide-react';
+import { fetchSuggestions } from '../utils/api';
+import SearchSuggestions from './SearchSuggestions';
 
 const COMMON_SALTS = [
   'Paracetamol',
@@ -50,12 +52,81 @@ export default function SearchSection({
   });
   const [exactMatch, setExactMatch] = useState(true);
 
+  // ── Autocomplete state ──
+  const [nameSuggestions, setNameSuggestions] = useState([]);
+  const [showNameSuggestions, setShowNameSuggestions] = useState(false);
+  const [saltSuggestions, setSaltSuggestions] = useState([]);
+  const [showSaltSuggestions, setShowSaltSuggestions] = useState(false);
+
+  // Refs for outside-click detection
+  const nameSearchWrapRef = useRef(null);
+  const saltInputWrapRef = useRef(null);
+
+  // ── Debounced fetch for name search ──
+  useEffect(() => {
+    if (!query || query.trim().length < 2) {
+      setNameSuggestions([]);
+      setShowNameSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const results = await fetchSuggestions(query, 'name');
+      setNameSuggestions(results);
+      setShowNameSuggestions(results.length > 0);
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // ── Debounced fetch for composition salt input ──
+  useEffect(() => {
+    if (!ingredientName || ingredientName.trim().length < 2) {
+      setSaltSuggestions([]);
+      setShowSaltSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      const results = await fetchSuggestions(ingredientName, 'composition');
+      setSaltSuggestions(results);
+      setShowSaltSuggestions(results.length > 0);
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [ingredientName]);
+
+  // ── Close on outside click ──
+  useEffect(() => {
+    const handler = (e) => {
+      if (nameSearchWrapRef.current && !nameSearchWrapRef.current.contains(e.target)) {
+        setShowNameSuggestions(false);
+      }
+      if (saltInputWrapRef.current && !saltInputWrapRef.current.contains(e.target)) {
+        setShowSaltSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   // Submit name search
   const handleNameSubmit = (e) => {
     e.preventDefault();
+    setShowNameSuggestions(false);
     if (query.trim()) {
       onSearch(query.trim());
     }
+  };
+
+  // Handle name suggestion selection
+  const handleNameSuggestionSelect = (item) => {
+    setQuery(item.name);
+    setShowNameSuggestions(false);
+    onSearch(item.name);
+  };
+
+  // Handle salt suggestion selection
+  const handleSaltSuggestionSelect = (item) => {
+    const nameToAdd = item.category === 'Salt' ? item.name : item.name;
+    setShowSaltSuggestions(false);
+    handleAddIngredient(nameToAdd, '');
   };
 
   // Add new ingredient to tag tray
@@ -170,45 +241,47 @@ export default function SearchSection({
         {searchMode === 'name' ? (
           /* Mode 1: Search By Medicine Name */
           <>
-            <form onSubmit={handleNameSubmit} className="search-box-card">
-              <Search size={20} color="var(--text-muted)" style={{ marginLeft: '0.5rem' }} />
+            <div className="search-autocomplete-wrap" ref={nameSearchWrapRef}>
+              <form onSubmit={handleNameSubmit} className="search-box-card">
+                <Search size={20} color="var(--text-muted)" style={{ marginLeft: '0.5rem' }} />
 
-              <input
-                type="text"
-                className="search-input-field"
-                placeholder="Search medicine name or salt (e.g. Dolo 650, Telma 40, Augmentin 625)..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                id="medicine-search-input"
+                <input
+                  type="text"
+                  className="search-input-field"
+                  placeholder="Search medicine name or salt (e.g. Dolo 650, Telma 40, Augmentin 625)..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => nameSuggestions.length > 0 && setShowNameSuggestions(true)}
+                  id="medicine-search-input"
+                  autoComplete="off"
+                />
+
+                <button
+                  type="submit"
+                  className="search-submit-btn"
+                  disabled={loading}
+                  id="execute-search-btn"
+                >
+                  {loading ? (
+                    <>
+                      <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
+                      <span>Comparing...</span>
+                    </>
+                  ) : (
+                    <span>Compare</span>
+                  )}
+                </button>
+              </form>
+
+              <SearchSuggestions
+                suggestions={nameSuggestions}
+                visible={showNameSuggestions}
+                query={query}
+                onSelect={handleNameSuggestionSelect}
+                onClose={() => setShowNameSuggestions(false)}
+                mode="name"
               />
-
-              <button
-                type="button"
-                className="scanner-cta-btn"
-                onClick={onOpenScanner}
-                title="Upload photo of your medicine strip or packaging"
-                id="open-strip-scanner-btn"
-              >
-                <Camera size={16} color="#10b981" />
-                <span>Scan Strip</span>
-              </button>
-
-              <button
-                type="submit"
-                className="search-submit-btn"
-                disabled={loading}
-                id="execute-search-btn"
-              >
-                {loading ? (
-                  <>
-                    <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
-                    <span>Comparing...</span>
-                  </>
-                ) : (
-                  <span>Compare</span>
-                )}
-              </button>
-            </form>
+            </div>
 
             {/* Recent searches chips – only shown after the user has searched */}
             {popularMedicines && popularMedicines.length > 0 && (
@@ -295,14 +368,24 @@ export default function SearchSection({
 
             {/* Input Row to Add More Salts */}
             <form onSubmit={handleCompositionSubmit} className="composition-input-row">
-              <div className="input-group-salt">
+              <div className="input-group-salt" style={{ position: 'relative' }} ref={saltInputWrapRef}>
                 <input
                   type="text"
                   className="composition-text-input"
                   placeholder="e.g. Paracetamol, Metformin, Amoxicillin..."
                   value={ingredientName}
                   onChange={(e) => setIngredientName(e.target.value)}
+                  onFocus={() => saltSuggestions.length > 0 && setShowSaltSuggestions(true)}
                   id="composition-salt-input"
+                  autoComplete="off"
+                />
+                <SearchSuggestions
+                  suggestions={saltSuggestions}
+                  visible={showSaltSuggestions}
+                  query={ingredientName}
+                  onSelect={handleSaltSuggestionSelect}
+                  onClose={() => setShowSaltSuggestions(false)}
+                  mode="composition"
                 />
               </div>
 
@@ -401,34 +484,6 @@ export default function SearchSection({
           </div>
         )}
 
-        {/* Live Platform Connectivity Status */}
-        <div className="platform-status-bar">
-          <span style={{ fontWeight: 600 }}>8 Live Stores:</span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Apollo (2-Hr Express)
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> PharmEasy (Guaranteed)
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Tata 1mg
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Netmeds
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Truemeds (Generics)
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> PlatinumRx
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Zepto (10-Min)
-          </span>
-          <span className="platform-pill">
-            <span className="status-dot" /> Amazon Pharmacy
-          </span>
-        </div>
       </div>
     </section>
   );

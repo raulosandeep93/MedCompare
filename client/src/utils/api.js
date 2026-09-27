@@ -90,3 +90,64 @@ export async function checkPlatformAvailability(pincode = '560001') {
   const json = await res.json();
   return json.availability || {};
 }
+
+export async function reverseGeocodeLocation(lat, lng) {
+  try {
+    const res = await fetch(apiUrl(`/api/pincode/reverse-geocode?lat=${lat}&lng=${lng}`));
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) return json.data;
+    }
+  } catch (err) {
+    console.warn('Server reverse geocode failed, trying client fallback...', err);
+  }
+
+  // Client-side fallback if server reverse geocode is unreachable
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    if (res.ok) {
+      const data = await res.json();
+      const addr = data.address || {};
+      const rawPostcode = addr.postcode || '';
+      const pinMatch = rawPostcode.match(/[1-9][0-9]{5}/);
+      const city = addr.city || addr.town || addr.village || addr.suburb || addr.city_district || addr.state_district || 'India';
+      if (pinMatch) {
+        return {
+          valid: true,
+          pincode: pinMatch[0],
+          city,
+          state: addr.state || 'India'
+        };
+      }
+    }
+  } catch (err2) {
+    console.warn('Direct Nominatim fallback failed:', err2);
+  }
+
+  return null;
+}
+
+export async function reportIssue(payload) {
+  const res = await fetch(apiUrl('/api/report-issue'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to submit report');
+  }
+  return res.json();
+}
+
+export async function fetchSuggestions(query, mode = 'name') {
+  if (!query || query.trim().length < 2) return [];
+  try {
+    const res = await fetch(apiUrl(`/api/suggestions?q=${encodeURIComponent(query.trim())}&mode=${mode}`));
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}

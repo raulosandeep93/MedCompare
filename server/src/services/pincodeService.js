@@ -77,3 +77,84 @@ export async function lookupPincode(pincode) {
 export function getPopularPincodes() {
   return POPULAR_PINCODES;
 }
+
+export async function reverseGeocodeLocation(lat, lng) {
+  const numLat = parseFloat(lat);
+  const numLng = parseFloat(lng);
+  if (isNaN(numLat) || isNaN(numLng)) {
+    throw new Error('Invalid coordinates');
+  }
+
+  let detectedPin = null;
+  let detectedCity = null;
+  let detectedState = null;
+
+  // 1. Try OpenStreetMap Nominatim
+  try {
+    const res = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+      params: { lat: numLat, lon: numLng, format: 'json' },
+      headers: { 'User-Agent': 'MedCompare-App/1.0 (contact@medcompare.in)' },
+      timeout: 4000
+    });
+    const addr = res.data?.address;
+    if (addr) {
+      if (addr.postcode) {
+        const match = String(addr.postcode).replace(/\s+/g, '').match(/[1-9][0-9]{5}/);
+        if (match) detectedPin = match[0];
+      }
+      detectedCity = addr.city || addr.town || addr.municipality || addr.suburb || addr.city_district || addr.state_district;
+      detectedState = addr.state;
+    }
+  } catch (err) {
+    // Non-fatal, try fallback
+  }
+
+  // 2. Try BigDataCloud fallback if no pincode yet
+  if (!detectedPin) {
+    try {
+      const res2 = await axios.get('https://api.bigdatacloud.net/data/reverse-geocode-client', {
+        params: { latitude: numLat, longitude: numLng, localityLanguage: 'en' },
+        timeout: 4000
+      });
+      if (res2.data?.postcode) {
+        const match = String(res2.data.postcode).replace(/\s+/g, '').match(/[1-9][0-9]{5}/);
+        if (match) detectedPin = match[0];
+      }
+      if (!detectedCity) detectedCity = res2.data?.city || res2.data?.locality;
+      if (!detectedState) detectedState = res2.data?.principalSubdivision;
+    } catch (err) {
+      // Non-fatal
+    }
+  }
+
+  // 3. Fallback to matching city in presets if still no pincode
+  if (!detectedPin && detectedCity) {
+    const matched = POPULAR_PINCODES.find(p =>
+      detectedCity.toLowerCase().includes(p.city.toLowerCase()) ||
+      p.city.toLowerCase().includes(detectedCity.toLowerCase())
+    );
+    if (matched) {
+      detectedPin = matched.pincode;
+      detectedCity = matched.city;
+      detectedState = matched.state;
+    }
+  }
+
+  if (detectedPin) {
+    const info = await lookupPincode(detectedPin);
+    return {
+      ...info,
+      city: detectedCity && detectedCity !== 'India' ? detectedCity : info.city,
+      state: detectedState || info.state
+    };
+  }
+
+  // Generic fallback if completely unresolved
+  return {
+    valid: false,
+    pincode: '560001',
+    city: detectedCity || 'Bengaluru',
+    state: detectedState || 'Karnataka',
+    message: 'Could not resolve exact postal code for coordinates.'
+  };
+}

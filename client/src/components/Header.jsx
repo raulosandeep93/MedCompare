@@ -4,6 +4,7 @@ import { Pill, MapPin, Moon, Sun, AlertCircle, Lightbulb, History } from 'lucide
 export default function Header({
   pincode,
   city,
+  locationStatus = 'idle',
   onOpenPincode,
   onOpenReportIssue,
   onOpenSuggestFeature,
@@ -27,14 +28,20 @@ export default function Header({
         <div className="header-actions">
           {/* 1. Location / PIN Code */}
           <button
-            className="pincode-pill"
+            className={`pincode-pill ${locationStatus === 'detecting' ? 'detecting' : ''}`}
             onClick={onOpenPincode}
-            title="Change Delivery PIN Code"
+            title={locationStatus === 'detecting' ? 'Auto-detecting delivery location...' : 'Delivery Location (Click to change)'}
             id="pincode-trigger-btn"
           >
-            <MapPin size={15} color="#10b981" />
-            <span>{pincode}</span>
-            {city && <span style={{ color: 'var(--text-muted)' }}>• {city}</span>}
+            <MapPin size={15} color="#10b981" className={locationStatus === 'detecting' ? 'location-pulse-icon' : ''} />
+            {locationStatus === 'detecting' ? (
+              <span>Locating...</span>
+            ) : (
+              <>
+                <span>{pincode}</span>
+                {city && <span style={{ color: 'var(--text-muted)' }}>• {city}</span>}
+              </>
+            )}
           </button>
 
           {/* 2. Report Issues */}

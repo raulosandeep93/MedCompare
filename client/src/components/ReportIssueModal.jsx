@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, AlertCircle, CheckCircle2, Send, AlertTriangle } from 'lucide-react';
+import { X, AlertCircle, CheckCircle2, Send, AlertTriangle, Loader2 } from 'lucide-react';
+import { reportIssue } from '../utils/api';
 
 const ISSUE_CATEGORIES = [
   { id: 'price_mismatch', label: 'Price Mismatch / Incorrect MRP' },
@@ -28,20 +29,41 @@ export default function ReportIssueModal({ isOpen, onClose, currentMedicine = ''
   const [medicineName, setMedicineName] = useState(currentMedicine || '');
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description.trim()) return;
 
-    // Simulate saving report
-    setSubmitted(true);
+    setSubmitting(true);
+    setErrorMsg('');
+
+    try {
+      const selectedCat = ISSUE_CATEGORIES.find((c) => c.id === category);
+      await reportIssue({
+        category,
+        categoryLabel: selectedCat ? selectedCat.label : category,
+        platform,
+        medicineName: medicineName.trim(),
+        description: description.trim(),
+        email: email.trim()
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Failed to submit report:', err);
+      setErrorMsg(err.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setErrorMsg('');
     setDescription('');
     onClose();
   };
@@ -190,11 +212,31 @@ export default function ReportIssueModal({ isOpen, onClose, currentMedicine = ''
               />
             </div>
 
+            {/* Error banner */}
+            {errorMsg && (
+              <div style={{
+                marginBottom: '1rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '8px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#ef4444',
+                fontSize: '0.8125rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
             {/* Actions */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
               <button
                 type="button"
                 className="add-salt-btn"
+                disabled={submitting}
                 onClick={handleReset}
               >
                 Cancel
@@ -202,11 +244,20 @@ export default function ReportIssueModal({ isOpen, onClose, currentMedicine = ''
               <button
                 type="submit"
                 className="execute-composition-btn"
-                disabled={!description.trim()}
-                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}
+                disabled={!description.trim() || submitting}
+                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', opacity: submitting ? 0.7 : 1 }}
               >
-                <Send size={15} />
-                <span>Submit Report</span>
+                {submitting ? (
+                  <>
+                    <Loader2 size={15} className="spinner" style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={15} />
+                    <span>Submit Report</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

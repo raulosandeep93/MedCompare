@@ -9,15 +9,37 @@ import ReportIssueModal from './components/ReportIssueModal';
 import SuggestFeatureModal from './components/SuggestFeatureModal';
 import ChangelogModal from './components/ChangelogModal';
 import PlatformAvailabilityBar from './components/PlatformAvailabilityBar';
-import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability } from './utils/api';
+import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation } from './utils/api';
 import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('medcompare_theme') || 'light';
   });
-  const [pincode, setPincode] = useState('560001');
-  const [city, setCity] = useState('Bengaluru');
+
+  // Location kept in memory (localStorage)
+  const [pincode, setPincode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('medcompare_user_location');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.pincode) return parsed.pincode;
+      }
+    } catch {}
+    return '560001';
+  });
+  const [city, setCity] = useState(() => {
+    try {
+      const saved = localStorage.getItem('medcompare_user_location');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.city) return parsed.city;
+      }
+    } catch {}
+    return 'Bengaluru';
+  });
+  const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'detecting' | 'detected' | 'denied'
+
   const [searchMode, setSearchMode] = useState('name'); // 'name' | 'composition'
   const [query, setQuery] = useState('');
   const [activeMedicine, setActiveMedicine] = useState('');
@@ -103,6 +125,60 @@ export default function App() {
     }
   }, []);
 
+  // Auto-request location permission on page landing and auto-set delivery location
+  useEffect(() => {
+    // Initial check for currently stored in-memory location
+    runAvailabilityCheck(pincode);
+
+    if (!navigator.geolocation) {
+      return;
+    }
+
+    setLocationStatus('detecting');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const loc = await reverseGeocodeLocation(latitude, longitude);
+          if (loc && loc.pincode) {
+            const detectedPin = loc.pincode;
+            const detectedCity = loc.city || 'India';
+            setPincode(detectedPin);
+            setCity(detectedCity);
+            setLocationStatus('detected');
+
+            // Persist to memory
+            try {
+              localStorage.setItem('medcompare_user_location', JSON.stringify({
+                pincode: detectedPin,
+                city: detectedCity,
+                state: loc.state,
+                lat: latitude,
+                lng: longitude,
+                updatedAt: Date.now()
+              }));
+            } catch {}
+
+            // Re-probe live stores for the newly detected pincode
+            runAvailabilityCheck(detectedPin);
+          } else {
+            setLocationStatus('idle');
+          }
+        } catch (err) {
+          console.warn('Auto-location reverse geocoding failed:', err);
+          setLocationStatus('idle');
+        }
+      },
+      (err) => {
+        // User denied or browser error – retain in-memory location without disturbing user
+        console.log('Location permission not granted or unavailable:', err.message);
+        setLocationStatus('denied');
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [runAvailabilityCheck]);
+
   const executeSearch = async (searchQuery, targetPin = pincode) => {
     if (!searchQuery || !searchQuery.trim()) return;
 
@@ -153,6 +229,14 @@ export default function App() {
   const handlePincodeChange = (newPin, newCity) => {
     setPincode(newPin);
     if (newCity) setCity(newCity);
+    setLocationStatus('detected');
+    try {
+      localStorage.setItem('medcompare_user_location', JSON.stringify({
+        pincode: newPin,
+        city: newCity || city,
+        updatedAt: Date.now()
+      }));
+    } catch {}
     if (searchMode === 'composition' && activeComposition) {
       executeCompositionSearch(activeComposition, exactMatchOnly, newPin);
     } else if (activeMedicine) {
@@ -178,6 +262,7 @@ export default function App() {
       <Header
         pincode={pincode}
         city={city}
+        locationStatus={locationStatus}
         onOpenPincode={() => setIsPincodeModalOpen(true)}
         onOpenReportIssue={() => setIsReportModalOpen(true)}
         onOpenSuggestFeature={() => setIsSuggestModalOpen(true)}

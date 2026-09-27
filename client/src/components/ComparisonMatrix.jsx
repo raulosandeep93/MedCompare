@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ComparisonCard from './ComparisonCard';
-import { Award, Zap, Tag, LayoutGrid, Table, MapPin, Filter, FlaskConical } from 'lucide-react';
+import { Award, Zap, Tag, Table, MapPin, FlaskConical, ChevronLeft, ChevronRight, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 
 const ORDERED_PLATFORMS = [
   'apollo',
@@ -14,8 +14,19 @@ const ORDERED_PLATFORMS = [
 ];
 
 export default function ComparisonMatrix({ data, pincode, city, onOpenPincode }) {
-  const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
+  const [viewMode, setViewMode] = useState('carousel'); // 'carousel' | 'table'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'quick' | 'discount'
+  const [sortMode, setSortMode] = useState('price-low'); // 'price-low' | 'speed' | 'default'
+
+  const carouselRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  // Mouse drag support
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftPos = useRef(0);
 
   if (!data || !data.platforms) {
     return null;
@@ -42,6 +53,107 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
     }
     return true;
   });
+
+  // Sort platforms so the top 3 best matching/priced platforms appear first
+  const sortedKeys = [...filteredKeys].sort((a, b) => {
+    const itemA = platforms[a]?.topItem;
+    const itemB = platforms[b]?.topItem;
+
+    // In-stock items first
+    if (itemA && !itemB) return -1;
+    if (!itemA && itemB) return 1;
+    if (!itemA && !itemB) return 0;
+
+    if (sortMode === 'price-low') {
+      const priceA = parseFloat(itemA.unitPrice) || 999999;
+      const priceB = parseFloat(itemB.unitPrice) || 999999;
+      return priceA - priceB;
+    }
+    if (sortMode === 'speed') {
+      const isUltraA = itemA.deliverySpeedTier === 'ultra-fast' || a === 'zepto';
+      const isUltraB = itemB.deliverySpeedTier === 'ultra-fast' || b === 'zepto';
+      if (isUltraA && !isUltraB) return -1;
+      if (!isUltraA && isUltraB) return 1;
+      return (parseFloat(itemA.unitPrice) || 0) - (parseFloat(itemB.unitPrice) || 0);
+    }
+    return ORDERED_PLATFORMS.indexOf(a) - ORDERED_PLATFORMS.indexOf(b);
+  });
+
+  // Update carousel scroll boundaries & active slide index
+  const updateScrollState = useCallback(() => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+
+    const slide = carouselRef.current.querySelector('.carousel-slide');
+    if (slide && slide.offsetWidth > 0) {
+      const idx = Math.round(scrollLeft / (slide.offsetWidth + 20));
+      setActiveSlideIndex(Math.max(0, Math.min(idx, sortedKeys.length - 1)));
+    }
+  }, [sortedKeys.length]);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    updateScrollState();
+    el.addEventListener('scroll', updateScrollState, { passive: true });
+    window.addEventListener('resize', updateScrollState);
+    return () => {
+      el.removeEventListener('scroll', updateScrollState);
+      window.removeEventListener('resize', updateScrollState);
+    };
+  }, [updateScrollState, viewMode]);
+
+  // Reset scroll to beginning when query, filter, or sort changes
+  useEffect(() => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  }, [data?.query, filterMode, sortMode]);
+
+  const handleScrollBy = (dir) => {
+    if (!carouselRef.current) return;
+    const slide = carouselRef.current.querySelector('.carousel-slide');
+    const scrollAmount = slide ? (slide.offsetWidth + 20) : 340;
+    carouselRef.current.scrollBy({
+      left: dir * scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleScrollToCard = (index) => {
+    if (!carouselRef.current) return;
+    const slide = carouselRef.current.querySelector('.carousel-slide');
+    const scrollAmount = slide ? (slide.offsetWidth + 20) : 340;
+    carouselRef.current.scrollTo({
+      left: index * scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  // Mouse drag events for horizontal swipe on desktop
+  const onMouseDown = (e) => {
+    if (e.button !== 0 || e.target.closest('button, a')) return;
+    isDragging.current = true;
+    startX.current = e.pageX - carouselRef.current.offsetLeft;
+    scrollLeftPos.current = carouselRef.current.scrollLeft;
+  };
+
+  const onMouseMove = (e) => {
+    if (!isDragging.current || !carouselRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX.current);
+    carouselRef.current.scrollLeft = scrollLeftPos.current - walk;
+  };
+
+  const onMouseUp = () => {
+    isDragging.current = false;
+  };
+  const onMouseLeave = () => {
+    isDragging.current = false;
+  };
 
   return (
     <div style={{ marginTop: '2rem' }}>
@@ -78,6 +190,29 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {/* Sort Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-card-subtle)', padding: '0.3rem 0.65rem', borderRadius: '10px', border: '1px solid var(--border-color)', fontSize: '0.75rem' }}>
+              <ArrowUpDown size={13} color="var(--text-muted)" />
+              <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Sort:</span>
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--text-main)',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="price-low">Top Value (Lowest Unit Price)</option>
+                <option value="speed">Fastest Delivery First</option>
+                <option value="default">Platform Default</option>
+              </select>
+            </div>
+
             {/* Filter Pills */}
             <div style={{ display: 'flex', background: 'var(--bg-card-subtle)', padding: '0.25rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
               <button
@@ -127,7 +262,7 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
             {/* View Toggle */}
             <div style={{ display: 'flex', background: 'var(--bg-card-subtle)', padding: '0.25rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
               <button
-                onClick={() => setViewMode('cards')}
+                onClick={() => setViewMode('carousel')}
                 style={{
                   padding: '0.35rem 0.75rem',
                   borderRadius: '8px',
@@ -136,12 +271,12 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem',
-                  background: viewMode === 'cards' ? 'var(--bg-card)' : 'transparent',
-                  color: viewMode === 'cards' ? 'var(--text-main)' : 'var(--text-muted)',
-                  boxShadow: viewMode === 'cards' ? 'var(--shadow-sm)' : 'none'
+                  background: viewMode === 'carousel' ? 'var(--bg-card)' : 'transparent',
+                  color: viewMode === 'carousel' ? 'var(--text-main)' : 'var(--text-muted)',
+                  boxShadow: viewMode === 'carousel' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <LayoutGrid size={15} /> Cards
+                <SlidersHorizontal size={14} /> Carousel
               </button>
               <button
                 onClick={() => setViewMode('table')}
@@ -158,7 +293,7 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
                   boxShadow: viewMode === 'table' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <Table size={15} /> Table View
+                <Table size={14} /> Table View
               </button>
             </div>
           </div>
@@ -213,17 +348,76 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
         </div>
       </div>
 
-      {/* Cards View Mode */}
-      {viewMode === 'cards' && (
-        <div className="platforms-grid">
-          {filteredKeys.map((key) => (
-            <ComparisonCard
-              key={key}
-              platformKey={key}
-              platformData={platforms[key]}
-              comparisonWinners={winners}
-            />
-          ))}
+      {/* Carousel View Mode */}
+      {viewMode === 'carousel' && (
+        <div className="carousel-wrapper">
+          <button
+            type="button"
+            className="carousel-nav-btn prev"
+            onClick={() => handleScrollBy(-1)}
+            disabled={!canScrollLeft}
+            aria-label="Previous platform options"
+            style={{
+              opacity: canScrollLeft ? 1 : 0,
+              pointerEvents: canScrollLeft ? 'auto' : 'none'
+            }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+
+          <div
+            className="carousel-viewport"
+            ref={carouselRef}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseLeave}
+          >
+            {sortedKeys.map((key) => (
+              <div className="carousel-slide" key={key}>
+                <ComparisonCard
+                  platformKey={key}
+                  platformData={platforms[key]}
+                  comparisonWinners={winners}
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="carousel-nav-btn next"
+            onClick={() => handleScrollBy(1)}
+            disabled={!canScrollRight}
+            aria-label="Next platform options"
+            style={{
+              opacity: canScrollRight ? 1 : 0,
+              pointerEvents: canScrollRight ? 'auto' : 'none'
+            }}
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          {/* Carousel Pagination & Indicator */}
+          <div className="carousel-indicators-bar">
+            <span className="carousel-counter-label">
+              Showing <strong>{activeSlideIndex + 1}–{Math.min(activeSlideIndex + 3, sortedKeys.length)}</strong> of {sortedKeys.length} stores
+            </span>
+            <div className="carousel-dots-group">
+              {sortedKeys.map((k, idx) => (
+                <button
+                  key={k}
+                  className={`carousel-dot ${activeSlideIndex === idx ? 'active' : ''}`}
+                  onClick={() => handleScrollToCard(idx)}
+                  title={`Jump to ${platforms[k]?.platformName || k}`}
+                  aria-label={`Jump to ${platforms[k]?.platformName || k}`}
+                />
+              ))}
+            </div>
+            <span className="carousel-swipe-hint">
+              Swipe left or right to compare more stores →
+            </span>
+          </div>
         </div>
       )}
 
