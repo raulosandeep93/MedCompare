@@ -12,27 +12,20 @@ export class AmazonPharmacyAdapter {
       const cleanQuery = query.trim();
       const deepLink = generateDeepLink('amazon', { query: cleanQuery });
 
-      // Amazon Pharmacy (Prescription Medication & Health store node 18049712031)
-      let name = cleanQuery;
-      let mrp = 32.28;
-      let sellingPrice = 28.50;
-      let packSize = 15;
-      let unitType = 'tablet';
-      let manufacturer = 'Amazon Pharmacy Partner';
-
-      if (referenceItem) {
-        name = referenceItem.name || cleanQuery;
-        mrp = referenceItem.mrp || 30;
-        // Amazon Pharmacy standard discount is ~12-15% with Prime
-        sellingPrice = parseFloat((mrp * 0.86).toFixed(2));
-        packSize = referenceItem.packSize || 10;
-        unitType = referenceItem.unitType || 'tablet';
-        manufacturer = referenceItem.manufacturer || 'Amazon Certified Seller';
-      } else {
-        const pack = extractPackInfo(cleanQuery, '');
-        packSize = pack.packSize || 10;
-        unitType = pack.unitType || 'tablet';
+      // If no verified reference item from live pharmacy platforms, do not fabricate a fake medicine
+      if (!referenceItem) {
+        return [];
       }
+
+      const name = referenceItem.name || cleanQuery;
+      const mrp = referenceItem.mrp || 30;
+      // Amazon Pharmacy standard discount is ~12-15% with Prime
+      const sellingPrice = parseFloat((mrp * 0.86).toFixed(2));
+      const packSize = referenceItem.packSize || 10;
+      const unitType = referenceItem.unitType || 'tablet';
+      const manufacturer = referenceItem.manufacturer || 'Amazon Certified Seller';
+      const brand = referenceItem.brand || referenceItem.manufacturer || 'Amazon Health';
+      const saltComposition = referenceItem.saltComposition || '';
 
       const pricing = normalizePricing({
         mrp,
@@ -46,9 +39,10 @@ export class AmazonPharmacyAdapter {
         platformName: this.name,
         sku: 'amazon-pharma-in',
         name: name.includes('Tablet') || name.includes('Capsule') || name.includes('Mg') ? name : `${name} (Amazon Health)`,
-        brand: cleanQuery,
+        brand,
+        saltComposition,
         manufacturer,
-        packForm: 'Pack',
+        packForm: referenceItem.packForm || 'Pack',
         packSize,
         unitType,
         ...pricing,

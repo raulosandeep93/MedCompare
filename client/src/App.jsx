@@ -9,6 +9,7 @@ import ReportIssueModal from './components/ReportIssueModal';
 import SuggestFeatureModal from './components/SuggestFeatureModal';
 import ChangelogModal from './components/ChangelogModal';
 import PlatformAvailabilityBar from './components/PlatformAvailabilityBar';
+import MedicineInfoPanel from './components/MedicineInfoPanel';
 import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation } from './utils/api';
 import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
@@ -272,6 +273,14 @@ export default function App() {
       />
 
       <main className="app-container">
+        {/* Platform Delivery Availability Bar */}
+        <PlatformAvailabilityBar
+          availability={platformAvailability}
+          loading={availabilityLoading}
+          pincode={pincode}
+          onRefresh={() => runAvailabilityCheck(pincode)}
+        />
+
         <SearchSection
           searchMode={searchMode}
           setSearchMode={setSearchMode}
@@ -285,14 +294,6 @@ export default function App() {
           popularCompositions={popularCompositions}
           activeMedicine={activeMedicine}
           activeIngredients={activeComposition}
-        />
-
-        {/* Platform Delivery Availability Bar */}
-        <PlatformAvailabilityBar
-          availability={platformAvailability}
-          loading={availabilityLoading}
-          pincode={pincode}
-          onRefresh={() => runAvailabilityCheck(pincode)}
         />
 
         {/* Loading Spinner */}
@@ -333,6 +334,11 @@ export default function App() {
               city={city}
               onOpenPincode={() => setIsPincodeModalOpen(true)}
             />
+
+            {/* Medicine Information Panel — uses, side effects, warnings */}
+            {data.medicineInfo && (
+              <MedicineInfoPanel medicineInfo={data.medicineInfo} />
+            )}
 
             {/* Generic Substitutes Section */}
             {data.genericSubstitutes && data.genericSubstitutes.length > 0 && (

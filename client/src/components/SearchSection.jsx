@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Camera, Sparkles, FlaskConical, Plus, X, Layers, CheckCircle2, Pill } from 'lucide-react';
+import { Search, Camera, Sparkles, FlaskConical, Plus, X, CheckCircle2, RotateCcw } from 'lucide-react';
 import { fetchSuggestions } from '../utils/api';
 import SearchSuggestions from './SearchSuggestions';
 
@@ -36,21 +36,16 @@ export default function SearchSection({
 }) {
   // Local state for composition builder
   const [ingredientName, setIngredientName] = useState('');
-  const [ingredientStrength, setIngredientStrength] = useState('');
   const [ingredients, setIngredients] = useState(() => {
     if (activeIngredients && activeIngredients.length > 0) {
       return activeIngredients.map((ing, idx) =>
         typeof ing === 'string'
-          ? { id: idx, name: ing, strength: '' }
-          : { id: idx, name: ing.name, strength: ing.strength || '' }
+          ? { id: idx, name: ing }
+          : { id: idx, name: ing.name }
       );
     }
-    return [
-      { id: 1, name: 'Amoxicillin', strength: '500mg' },
-      { id: 2, name: 'Clavulanic Acid', strength: '125mg' }
-    ];
+    return [];
   });
-  const [exactMatch, setExactMatch] = useState(true);
 
   // ── Autocomplete state ──
   const [nameSuggestions, setNameSuggestions] = useState([]);
@@ -124,13 +119,12 @@ export default function SearchSection({
 
   // Handle salt suggestion selection
   const handleSaltSuggestionSelect = (item) => {
-    const nameToAdd = item.category === 'Salt' ? item.name : item.name;
     setShowSaltSuggestions(false);
-    handleAddIngredient(nameToAdd, '');
+    handleAddIngredient(item.name);
   };
 
   // Add new ingredient to tag tray
-  const handleAddIngredient = (nameToAdd = ingredientName, strengthToAdd = ingredientStrength) => {
+  const handleAddIngredient = (nameToAdd = ingredientName) => {
     const cleanName = (nameToAdd || '').trim();
     if (!cleanName) return;
 
@@ -143,13 +137,11 @@ export default function SearchSection({
         ...prev,
         {
           id: Date.now() + Math.random(),
-          name: cleanName,
-          strength: (strengthToAdd || '').trim()
+          name: cleanName
         }
       ]);
     }
     setIngredientName('');
-    setIngredientStrength('');
   };
 
   // Remove an ingredient
@@ -157,15 +149,10 @@ export default function SearchSection({
     setIngredients((prev) => prev.filter((i) => i.id !== idToRemove));
   };
 
-  // Select a popular combination preset
-  const handlePresetClick = (preset) => {
-    const mapped = preset.ingredients.map((ing, idx) => ({
-      id: Date.now() + idx,
-      name: ing.name,
-      strength: ing.strength || ''
-    }));
-    setIngredients(mapped);
-    onCompositionSearch(preset.ingredients, exactMatch);
+  // Reset all ingredients
+  const handleResetIngredients = () => {
+    setIngredients([]);
+    setIngredientName('');
   };
 
   // Submit composition search
@@ -176,7 +163,7 @@ export default function SearchSection({
       return;
     }
     if (ingredients.length > 0) {
-      onCompositionSearch(ingredients, exactMatch);
+      onCompositionSearch(ingredients, true);
     }
   };
 
@@ -219,7 +206,6 @@ export default function SearchSection({
           >
             <FlaskConical size={16} />
             <span>By Composition (Salts)</span>
-            <span className="mode-tab-badge">Exact Match</span>
           </button>
 
           <button
@@ -308,49 +294,49 @@ export default function SearchSection({
         ) : (
           /* Mode 2: Multi-Ingredient / Composition Builder */
           <div className="composition-builder-card">
+            {/* Header */}
             <div className="composition-header">
               <div className="composition-header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <FlaskConical size={18} color="#10b981" />
-                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: 0 }}>
+                  <FlaskConical size={20} color="#10b981" />
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0 }}>
                     Medicine Composition & Salt Matcher
                   </h3>
                 </div>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
-                  Add multiple active salts to find all medicines that match the exact combination.
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                  Add active salts to find all medicines that match the combination.
                 </p>
               </div>
-
-              {/* Exact Match Toggle */}
-              <label className="exact-match-toggle" title="Only return medicines that contain ALL specified ingredients">
-                <input
-                  type="checkbox"
-                  checked={exactMatch}
-                  onChange={(e) => setExactMatch(e.target.checked)}
-                  id="exact-match-checkbox"
-                />
-                <span className="toggle-label">
-                  <strong>Exact Combination Match</strong>
-                  <small style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                    Must contain all salts
-                  </small>
-                </span>
-              </label>
             </div>
 
-            {/* Active Ingredients Tray */}
+            {/* Active Ingredients Tray with Reset Option */}
             <div className="ingredients-tray">
-              <span className="tray-label">Active Formulation Ingredients ({ingredients.length}):</span>
+              <div className="tray-header">
+                <span className="tray-label">
+                  Active Formulation Ingredients ({ingredients.length}):
+                </span>
+                {ingredients.length > 0 && (
+                  <button
+                    type="button"
+                    className="reset-ingredients-btn"
+                    onClick={handleResetIngredients}
+                    title="Reset all ingredients"
+                    id="reset-formulation-btn"
+                  >
+                    <RotateCcw size={12} />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
               <div className="ingredient-chips-list">
                 {ingredients.length === 0 ? (
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--text-subtle)', fontStyle: 'italic' }}>
-                    No ingredients added. Type an active ingredient below or select a popular combination.
+                  <span className="tray-empty-hint">
+                    No ingredients added yet. Type an active salt below or choose from quick salts.
                   </span>
                 ) : (
                   ingredients.map((ing) => (
                     <div key={ing.id} className="ingredient-chip-tag">
                       <span className="salt-name">{ing.name}</span>
-                      {ing.strength && <span className="salt-strength">{ing.strength}</span>}
                       <button
                         type="button"
                         className="remove-salt-btn"
@@ -366,13 +352,13 @@ export default function SearchSection({
               </div>
             </div>
 
-            {/* Input Row to Add More Salts */}
+            {/* Input Row: Wide salt input + Add Salt button */}
             <form onSubmit={handleCompositionSubmit} className="composition-input-row">
-              <div className="input-group-salt" style={{ position: 'relative' }} ref={saltInputWrapRef}>
+              <div className="input-group-salt" ref={saltInputWrapRef}>
                 <input
                   type="text"
                   className="composition-text-input"
-                  placeholder="e.g. Paracetamol, Metformin, Amoxicillin..."
+                  placeholder="e.g. Paracetamol, Metformin, Amoxicillin (press Enter to add)..."
                   value={ingredientName}
                   onChange={(e) => setIngredientName(e.target.value)}
                   onFocus={() => saltSuggestions.length > 0 && setShowSaltSuggestions(true)}
@@ -389,17 +375,6 @@ export default function SearchSection({
                 />
               </div>
 
-              <div className="input-group-strength">
-                <input
-                  type="text"
-                  className="composition-text-input"
-                  placeholder="Dosage (e.g. 500mg, 2mg)"
-                  value={ingredientStrength}
-                  onChange={(e) => setIngredientStrength(e.target.value)}
-                  id="composition-strength-input"
-                />
-              </div>
-
               <button
                 type="button"
                 className="add-salt-btn"
@@ -410,31 +385,11 @@ export default function SearchSection({
                 <Plus size={16} />
                 <span>Add Salt</span>
               </button>
-
-              <button
-                type="button"
-                className="execute-composition-btn"
-                onClick={() => onCompositionSearch(ingredients, exactMatch)}
-                disabled={loading || ingredients.length === 0}
-                id="find-exact-combinations-btn"
-              >
-                {loading ? (
-                  <>
-                    <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
-                    <span>Searching Combination...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 size={16} />
-                    <span>Find Exact Matches</span>
-                  </>
-                )}
-              </button>
             </form>
 
             {/* Quick Salt Suggestion Pills */}
             <div className="quick-salts-container">
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+              <span className="quick-salts-label">
                 Quick Add Salt:
               </span>
               <div className="quick-salts-list">
@@ -447,6 +402,7 @@ export default function SearchSection({
                       className={`quick-salt-pill ${isAdded ? 'added' : ''}`}
                       onClick={() => !isAdded && handleAddIngredient(salt)}
                       disabled={isAdded}
+                      title={isAdded ? `${salt} already added` : `Add ${salt}`}
                     >
                       {isAdded ? '✓ ' : '+ '}
                       {salt}
@@ -456,31 +412,32 @@ export default function SearchSection({
               </div>
             </div>
 
-            {/* Popular Multi-Ingredient Combination Presets */}
-            {popularCompositions && popularCompositions.length > 0 && (
-              <div className="popular-presets-container">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                  <Layers size={14} color="#10b981" />
-                  <span style={{ fontSize: '0.78125rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                    Popular Multi-Ingredient Formulations in India:
-                  </span>
-                </div>
-                <div className="presets-chips-grid">
-                  {popularCompositions.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className="preset-card-chip"
-                      onClick={() => handlePresetClick(preset)}
-                      title={`${preset.title} (${preset.category})`}
-                    >
-                      <span className="preset-title">{preset.title}</span>
-                      <span className="preset-brand">e.g. {preset.referenceBrand}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Dedicated Action Button to Find Matches - distinct & separated from Add Salt */}
+            <div className="composition-search-footer">
+              <button
+                type="button"
+                className="execute-composition-btn"
+                onClick={() => onCompositionSearch(ingredients, true)}
+                disabled={loading || ingredients.length === 0}
+                id="find-exact-combinations-btn"
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
+                    <span>Searching Combination...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={18} />
+                    <span>
+                      {ingredients.length > 0
+                        ? `Find Matching Medicines (${ingredients.length} ${ingredients.length === 1 ? 'Salt' : 'Salts'})`
+                        : 'Add Salts to Find Matches'}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
 

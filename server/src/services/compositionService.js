@@ -225,11 +225,11 @@ export function evaluateCompositionMatch(item, requestedIngredients = [], requir
     };
   }
 
-  // Collect all searchable text fields from the item
+  // Collect searchable chemical text fields from the item (saltComposition and name only).
+  // Do NOT include item.brand to avoid false positives when brand contains non-chemical or search query text.
   const compositionText = item.saltComposition || '';
-  const brandText = item.brand || '';
   const nameText = item.name || '';
-  const combinedText = `${compositionText} ${brandText} ${nameText}`.toLowerCase();
+  const combinedText = `${compositionText} ${nameText}`.toLowerCase();
 
   const matchedIngredients = [];
   const missingIngredients = [];
@@ -246,12 +246,11 @@ export function evaluateCompositionMatch(item, requestedIngredients = [], requir
     }
   }
 
-  // Also check against our known combination database if the item's brand matches
+  // Also check against our known combination database if the item's name matches a reference brand
   const totalCount = requestedIngredients.length;
   let isKnownFormulationMatch = false;
 
   const foundPreset = POPULAR_COMPOSITIONS.find(preset => {
-    // Check if item name contains any of the reference search keywords
     return preset.searchKeywords.some(kw =>
       combinedText.includes(kw.toLowerCase()) ||
       combinedText.includes(preset.referenceBrand.toLowerCase())
@@ -259,17 +258,18 @@ export function evaluateCompositionMatch(item, requestedIngredients = [], requir
   });
 
   if (foundPreset) {
-    // Check if preset ingredients match requested ingredients
-    const presetMatchesAll = requestedIngredients.every(req => {
-      const rName = (typeof req === 'string' ? req : req.name || '').toLowerCase();
-      return foundPreset.ingredients.some(pi =>
-        checkIngredientMatch(pi.name, rName) || checkIngredientMatch(rName, pi.name)
-      );
-    });
+    // Both ingredient counts must match for an exact formulation match
+    const presetMatchesAll =
+      foundPreset.ingredients.length === requestedIngredients.length &&
+      requestedIngredients.every(req => {
+        const rName = (typeof req === 'string' ? req : req.name || '').toLowerCase();
+        return foundPreset.ingredients.some(pi =>
+          checkIngredientMatch(pi.name, rName) || checkIngredientMatch(rName, pi.name)
+        );
+      });
 
     if (presetMatchesAll) {
       isKnownFormulationMatch = true;
-      // All requested ingredients are satisfied by this known formulation
       for (const missing of [...missingIngredients]) {
         matchedIngredients.push(missing);
       }
@@ -278,7 +278,16 @@ export function evaluateCompositionMatch(item, requestedIngredients = [], requir
   }
 
   const matchCount = matchedIngredients.length;
-  const isExactMatch = matchCount === totalCount;
+  let isExactMatch = matchCount === totalCount && missingIngredients.length === 0;
+
+  // Extra validation: if item has explicit saltComposition, ensure salt count matches requested ingredients
+  if (isExactMatch && compositionText) {
+    const actualSalts = compositionText.split(/[+,/]/).map(s => s.trim()).filter(Boolean);
+    if (actualSalts.length > 0 && Math.abs(actualSalts.length - totalCount) >= 2) {
+      isExactMatch = false;
+    }
+  }
+
   const matchScore = totalCount > 0 ? parseFloat((matchCount / totalCount).toFixed(2)) : 0;
 
   return {

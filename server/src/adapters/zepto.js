@@ -12,28 +12,20 @@ export class ZeptoAdapter {
       const cleanQuery = query.trim();
       const deepLink = generateDeepLink('zepto', { query: cleanQuery });
 
-      // Zepto is India's premier quick-commerce provider with 10-minute medicine & wellness delivery
-      // Standard pricing reflects retail MRP with standard quick-commerce convenience delivery
-      let name = cleanQuery;
-      let mrp = 32.28;
-      let sellingPrice = 30.50;
-      let packSize = 15;
-      let unitType = 'tablet';
-      let manufacturer = 'Pharma Partner';
-
-      if (referenceItem) {
-        name = referenceItem.name || cleanQuery;
-        mrp = referenceItem.mrp || 30;
-        // Zepto typically offers 5-8% discount on pharma/wellness items
-        sellingPrice = parseFloat((mrp * 0.94).toFixed(2));
-        packSize = referenceItem.packSize || 10;
-        unitType = referenceItem.unitType || 'tablet';
-        manufacturer = referenceItem.manufacturer || 'Zepto Dark Store Partner';
-      } else {
-        const pack = extractPackInfo(cleanQuery, '');
-        packSize = pack.packSize || 10;
-        unitType = pack.unitType || 'tablet';
+      // If no verified reference item from live pharmacy platforms, do not fabricate a fake medicine
+      if (!referenceItem) {
+        return [];
       }
+
+      const name = referenceItem.name || cleanQuery;
+      const mrp = referenceItem.mrp || 30;
+      // Zepto typically offers 5-8% discount on pharma/wellness items
+      const sellingPrice = parseFloat((mrp * 0.94).toFixed(2));
+      const packSize = referenceItem.packSize || 10;
+      const unitType = referenceItem.unitType || 'tablet';
+      const manufacturer = referenceItem.manufacturer || 'Zepto Dark Store Partner';
+      const brand = referenceItem.brand || referenceItem.manufacturer || 'Zepto Quick';
+      const saltComposition = referenceItem.saltComposition || '';
 
       const pricing = normalizePricing({
         mrp,
@@ -47,9 +39,10 @@ export class ZeptoAdapter {
         platformName: this.name,
         sku: 'zepto-quick-pharma',
         name: name.includes('Tablet') || name.includes('Capsule') || name.includes('Mg') ? name : `${name} (Instant Store)`,
-        brand: cleanQuery,
+        brand,
+        saltComposition,
         manufacturer,
-        packForm: 'Pack',
+        packForm: referenceItem.packForm || 'Pack',
         packSize,
         unitType,
         ...pricing,

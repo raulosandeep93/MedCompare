@@ -8,6 +8,7 @@ import { NetmedsAdapter } from '../adapters/netmeds.js';
 import { ZeptoAdapter } from '../adapters/zepto.js';
 import { AmazonPharmacyAdapter } from '../adapters/amazon.js';
 import { buildCompositionQuery, evaluateCompositionMatch, POPULAR_COMPOSITIONS } from './compositionService.js';
+import { buildMedicineInfo } from './medicineInfoService.js';
 
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 }); // 5 minutes cache
 
@@ -245,7 +246,21 @@ export class MedicineAggregator {
           name: fastestDeliveryItem.name
         } : null
       },
-      genericSubstitutes: allSubstitutes.slice(0, 8)
+      genericSubstitutes: allSubstitutes.slice(0, 8),
+      medicineInfo: buildMedicineInfo(
+        cleanQuery,
+        {
+          apollo: { topItem: topApollo, available: apolloItems.length > 0 },
+          truemeds: { topItem: topTruemeds, available: truemedsItems.length > 0 },
+          platinumrx: { topItem: topPlatinum, available: platinumItems.length > 0 },
+          pharmeasy: { topItem: topPharmEasy, available: pharmeasyItems.length > 0 },
+          onemg: { topItem: topOneMg, available: onemgItems.length > 0 },
+          netmeds: { topItem: topNetmeds, available: netmedsItems.length > 0 },
+          zepto: { topItem: topZepto, available: zeptoItems.length > 0 },
+          amazon: { topItem: topAmazon, available: amazonItems.length > 0 }
+        },
+        topItems.length
+      )
     };
 
     cache.set(cacheKey, response);
@@ -325,6 +340,7 @@ export class MedicineAggregator {
       updatedPlatforms[platformKey] = {
         ...pData,
         count: itemsToUse.length,
+        available: itemsToUse.length > 0,
         topItem,
         items: itemsToUse
       };
@@ -399,7 +415,12 @@ export class MedicineAggregator {
         totalExactMatches: exactMatchTopItems.length,
         referenceBrand: preset?.referenceBrand || null,
         presetCategory: preset?.category || null
-      }
+      },
+      medicineInfo: buildMedicineInfo(
+        ingList.join(' + '),
+        updatedPlatforms,
+        exactMatchTopItems.length
+      )
     };
 
     cache.set(cacheKey, response);

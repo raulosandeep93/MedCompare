@@ -107,23 +107,17 @@ export class NetmedsAdapter {
     }
 
     // Graceful fallback using reference item if Netmeds times out
-    let name = cleanQuery;
-    let mrp = 32.28;
-    let packSize = 15;
-    let unitType = 'tablet';
-    let manufacturer = 'Netmeds Certified Pharmacy';
-
-    if (referenceItem) {
-      name = referenceItem.name || cleanQuery;
-      mrp = referenceItem.mrp || 30;
-      packSize = referenceItem.packSize || 10;
-      unitType = referenceItem.unitType || 'tablet';
-      manufacturer = referenceItem.manufacturer || manufacturer;
-    } else {
-      const pack = extractPackInfo(cleanQuery, '');
-      packSize = pack.packSize || 10;
-      unitType = pack.unitType || 'tablet';
+    if (!referenceItem) {
+      return [];
     }
+
+    const name = referenceItem.name || cleanQuery;
+    const mrp = referenceItem.mrp || 30;
+    const packSize = referenceItem.packSize || 10;
+    const unitType = referenceItem.unitType || 'tablet';
+    const manufacturer = referenceItem.manufacturer || 'Netmeds Certified Pharmacy';
+    const brand = referenceItem.brand || referenceItem.manufacturer || 'Netmeds';
+    const saltComposition = referenceItem.saltComposition || '';
 
     // Netmeds standard online discount is ~18-22%
     const sellingPrice = parseFloat((mrp * 0.80).toFixed(2));
@@ -135,9 +129,10 @@ export class NetmedsAdapter {
       platformName: this.name,
       sku: 'netmeds-online',
       name: name.includes('Tablet') || name.includes('Capsule') || name.includes('Mg') ? name : `${name} (Netmeds)`,
-      brand: cleanQuery,
+      brand,
+      saltComposition,
       manufacturer,
-      packForm: 'Pack',
+      packForm: referenceItem.packForm || 'Pack',
       packSize,
       unitType,
       ...pricing,
