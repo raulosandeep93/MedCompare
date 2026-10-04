@@ -1241,6 +1241,29 @@ input {
   background: #131921;
 }
 
+.card-report-btn {
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  width: 100%;
+  transition: all 0.18s ease;
+}
+
+.card-report-btn:hover {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
 
 /* ══════════════════════════════════════════════════════════════
    Medicine Information Panel

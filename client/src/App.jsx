@@ -64,6 +64,7 @@ export default function App() {
   const [isPincodeModalOpen, setIsPincodeModalOpen] = useState(false);
   const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportModalData, setReportModalData] = useState({ medicineName: '', platform: '' });
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
 
@@ -258,6 +259,15 @@ export default function App() {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  const handleOpenReportIssue = (overrideMedicine, overridePlatform) => {
+    const med = (overrideMedicine || activeMedicine || query || data?.query || data?.medicineInfo?.medicineName || '').trim();
+    setReportModalData({
+      medicineName: med,
+      platform: overridePlatform || 'All Stores / General'
+    });
+    setIsReportModalOpen(true);
+  };
+
   return (
     <div className="app-root">
       <Header
@@ -265,7 +275,7 @@ export default function App() {
         city={city}
         locationStatus={locationStatus}
         onOpenPincode={() => setIsPincodeModalOpen(true)}
-        onOpenReportIssue={() => setIsReportModalOpen(true)}
+        onOpenReportIssue={() => handleOpenReportIssue()}
         onOpenSuggestFeature={() => setIsSuggestModalOpen(true)}
         onOpenChangelogs={() => setIsChangelogModalOpen(true)}
         theme={theme}
@@ -333,6 +343,7 @@ export default function App() {
               pincode={pincode}
               city={city}
               onOpenPincode={() => setIsPincodeModalOpen(true)}
+              onOpenReportIssue={handleOpenReportIssue}
             />
 
             {/* Medicine Information Panel — uses, side effects, warnings */}
@@ -473,7 +484,8 @@ export default function App() {
       <ReportIssueModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
-        currentMedicine={activeMedicine}
+        currentMedicine={reportModalData.medicineName || activeMedicine || query || data?.query || data?.medicineInfo?.medicineName || ''}
+        initialPlatform={reportModalData.platform || 'All Stores / General'}
       />
 
       <SuggestFeatureModal

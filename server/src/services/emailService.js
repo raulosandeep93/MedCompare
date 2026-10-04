@@ -3,11 +3,13 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, '../../data');
 const ISSUES_FILE = path.join(DATA_DIR, 'issues.json');
+const ENV_FILE = path.join(__dirname, '../../.env');
 
 // Ensure data folder and issues.json exist
 function ensureDataStore() {
@@ -68,11 +70,13 @@ function generateEmailHtml(report) {
           </tr>
           <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 10px 0; font-weight: 600; color: #64748b;">Medicine:</td>
-            <td style="padding: 10px 0; color: #0f172a; font-weight: 600;">${report.medicineName || 'Not specified'}</td>
+            <td style="padding: 10px 0; color: #0f172a; font-weight: 700; font-size: 15px; color: #059669;">
+              ${report.medicineName || '<em>Not specified</em>'}
+            </td>
           </tr>
           <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 10px 0; font-weight: 600; color: #64748b;">Platform:</td>
-            <td style="padding: 10px 0; color: #0f172a;">${report.platform || 'All Stores / General'}</td>
+            <td style="padding: 10px 0; color: #0f172a; font-weight: 600;">${report.platform || 'All Stores / General'}</td>
           </tr>
           <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 10px 0; font-weight: 600; color: #64748b;">User Email:</td>
@@ -103,17 +107,55 @@ function generateEmailHtml(report) {
 
 // Send email notification using Nodemailer or Resend
 export async function sendIssueNotificationEmail(report) {
+  // Always load latest values from .env if present
+  try {
+    dotenv.config({ path: ENV_FILE, override: true });
+  } catch {}
+
   // 1. Always save a permanent local copy
   saveIssueLocally(report);
 
   const subject = `[MedCompare Issue] ${report.categoryLabel || report.category}: ${report.medicineName || 'Feedback'}`;
   const htmlContent = generateEmailHtml(report);
 
-  // 2. Option A: Resend API (if RESEND_API_KEY is defined in .env)
+  // 2. Primary: Nodemailer SMTP (Direct delivery to Inbox with authenticated user)
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const port = parseInt(process.env.SMTP_PORT || '465', 10);
+      const isSecure = process.env.SMTP_SECURE === 'true' || port === 465;
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port,
+        secure: isSecure,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS.replace(/\s+/g, '') // remove spaces from app password
+        }
+      });
+
+      const recipient = process.env.ALERT_EMAIL_TO || process.env.SMTP_USER;
+      const sender = process.env.ALERT_EMAIL_FROM || `"MedCompare Alerts" <${process.env.SMTP_USER}>`;
+
+      const info = await transporter.sendMail({
+        from: sender,
+        to: recipient,
+        replyTo: report.email || undefined,
+        subject,
+        html: htmlContent
+      });
+
+      console.log(`[EmailService] Successfully sent issue email via Gmail SMTP to ${recipient}:`, info.messageId);
+      return { success: true, provider: 'nodemailer', id: info.messageId, recipient };
+    } catch (err) {
+      console.error('[EmailService] Nodemailer SMTP failed, attempting fallback to Resend:', err.message);
+    }
+  }
+
+  // 3. Fallback: Resend API (if configured)
   if (process.env.RESEND_API_KEY) {
     try {
-      const toEmail = process.env.ALERT_EMAIL_TO || 'admin@medcompare.in';
-      const fromEmail = process.env.ALERT_EMAIL_FROM || 'MedCompare Alerts <onboarding@resend.dev>';
+      const toEmail = process.env.ALERT_EMAIL_TO || 'raulosandeep93@gmail.com';
+      const fromEmail = process.env.ALERT_EMAIL_FROM_RESEND || 'MedCompare Alerts <onboarding@resend.dev>';
       
       const res = await axios.post('https://api.resend.com/emails', {
         from: fromEmail,
@@ -133,42 +175,11 @@ export async function sendIssueNotificationEmail(report) {
       return { success: true, provider: 'resend', id: res.data?.id };
     } catch (err) {
       console.error('[EmailService] Resend email failed:', err.response?.data || err.message);
-      // Fall through to try Nodemailer if configured
     }
   }
 
-  // 3. Option B: Nodemailer SMTP (Gmail, Outlook, custom SMTP)
-  if (process.env.SMTP_USER || process.env.SMTP_HOST) {
-    try {
-      const port = parseInt(process.env.SMTP_PORT || '587', 10);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port,
-        secure: process.env.SMTP_SECURE === 'true' || port === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-
-      const info = await transporter.sendMail({
-        from: process.env.ALERT_EMAIL_FROM || `"MedCompare Alerts" <${process.env.SMTP_USER}>`,
-        to: process.env.ALERT_EMAIL_TO || process.env.SMTP_USER,
-        replyTo: report.email || undefined,
-        subject,
-        html: htmlContent
-      });
-
-      console.log('[EmailService] Successfully sent email notification via Nodemailer:', info.messageId);
-      return { success: true, provider: 'nodemailer', id: info.messageId };
-    } catch (err) {
-      console.error('[EmailService] Nodemailer dispatch failed:', err.message);
-      return { success: false, error: err.message, savedLocally: true };
-    }
-  }
-
-  // 4. Fallback if no SMTP or Resend credentials configured yet
-  console.log('[EmailService] Issue recorded in server/data/issues.json. To send live emails, set RESEND_API_KEY or SMTP_USER/SMTP_PASS in server/.env');
+  // 4. Fallback if no SMTP or Resend credentials succeeded
+  console.log('[EmailService] Issue recorded in server/data/issues.json. Live email dispatch could not complete.');
   return {
     success: true,
     provider: 'local_storage',

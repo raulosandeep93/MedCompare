@@ -1,7 +1,7 @@
 import React from 'react';
 import { ExternalLink, Zap, Award, Tag, Clock, ShieldCheck, CheckCircle2, AlertCircle, FlaskConical } from 'lucide-react';
 
-export default function ComparisonCard({ platformKey, platformData, comparisonWinners }) {
+export default function ComparisonCard({ platformKey, platformData, comparisonWinners, onOpenReportIssue }) {
   const { platformName, topItem } = platformData;
 
   const isLowestUnit = comparisonWinners?.lowestUnitPrice?.platform === platformKey;
@@ -158,6 +158,16 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
               <span>Buy on {platformName}</span>
               <ExternalLink size={16} />
             </a>
+
+            <button
+              type="button"
+              onClick={() => onOpenReportIssue?.(topItem.name, platformName)}
+              className="card-report-btn"
+              title={`Report wrong price or broken link for ${platformName}`}
+            >
+              <AlertCircle size={12} />
+              <span>Report issue for this store</span>
+            </button>
           </>
         ) : (
           <div style={{
@@ -177,6 +187,16 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
             <p style={{ fontSize: '0.8125rem' }}>
               This drug or exact brand may be listed under an alternative generic salt on {platformName}.
             </p>
+            <button
+              type="button"
+              onClick={() => onOpenReportIssue?.('', platformName)}
+              className="card-report-btn"
+              style={{ marginTop: '0.75rem', width: 'auto' }}
+              title={`Report missing medicine on ${platformName}`}
+            >
+              <AlertCircle size={12} />
+              <span>Report missing on {platformName}</span>
+            </button>
           </div>
         )}
       </div>

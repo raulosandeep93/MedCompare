@@ -1,5 +1,65 @@
 [
   {
+    "id": "issue_1791125660024_8bkd3",
+    "category": "ui_bug",
+    "categoryLabel": "Website Glitch or UI Bug",
+    "platform": "All Stores / General",
+    "medicineName": "Augmentin 625 Duo",
+    "description": "Test",
+    "email": "ranisha566@gmail.com",
+    "timestamp": "2026-10-04T14:54:20.024Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "issue_1791125595613_c7x1t",
+    "category": "broken_link",
+    "categoryLabel": "Broken Store Link / 404 Redirection",
+    "platform": "All Stores / General",
+    "medicineName": "",
+    "description": "Test",
+    "email": "",
+    "timestamp": "2026-10-04T14:53:15.613Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "issue_1791124401875_3tohj",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "Tata 1mg",
+    "medicineName": "Dolo 650",
+    "description": "User confirmed: Tata 1mg price showed ₹30 instead of ₹33.50",
+    "email": "raulosandeep93@gmail.com",
+    "timestamp": "2026-10-04T14:33:21.875Z",
+    "userAgent": "curl/7.81.0"
+  },
+  {
+    "id": "issue_1791124382303_hd11x",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "Tata 1mg",
+    "medicineName": "Dolo 650",
+    "description": "Live test report verification - price mismatch reported",
+    "email": "raulosandeep93@gmail.com",
+    "timestamp": "2026-10-04T14:33:02.303Z",
+    "userAgent": "curl/7.81.0"
+  },
+  {
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "PharmEasy",
+    "medicineName": "Augmentin 625 Duo",
+    "description": "Verification test to confirm issue report email is received in inbox",
+    "email": "test_reporter@example.com"
+  },
+  {
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "Tata 1mg",
+    "medicineName": "Dolo 650",
+    "description": "Test issue from debug script",
+    "email": "test@example.com"
+  },
+  {
     "id": "issue_1790520431338_4ruhs",
     "category": "price_mismatch",
     "categoryLabel": "Price Mismatch / Incorrect MRP",

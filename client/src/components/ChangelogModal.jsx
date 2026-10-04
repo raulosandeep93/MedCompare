@@ -1,11 +1,36 @@
 import React from 'react';
-import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck, Search, MapPin, Mail, SlidersHorizontal } from 'lucide-react';
+import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck, Search, MapPin, Mail, SlidersHorizontal, Wrench, Bot } from 'lucide-react';
 
 const RELEASES = [
   {
+    version: 'v1.4.0',
+    date: 'October 4, 2026',
+    isLatest: true,
+    tag: 'Stability & AI',
+    title: 'Critical Rendering Fix, Smart Issue Pre-fill & AI Agent Context',
+    highlights: [
+      {
+        icon: <Wrench size={15} color="#ef4444" />,
+        text: 'Critical Blank Screen Fix: Resolved a React Rules-of-Hooks violation in the Comparison Matrix where conditional hook calls (useCallback, useEffect) were crashing the entire app on load.'
+      },
+      {
+        icon: <Mail size={15} color="#f59e0b" />,
+        text: 'Gmail SMTP Email Delivery: Issue report notifications now reliably reach the admin inbox via direct Gmail SMTP (SSL/465) with a Google App Password — no more silent failures.'
+      },
+      {
+        icon: <Search size={15} color="#10b981" />,
+        text: 'Smart Issue Pre-fill: Opening “Report Issue” from a search result now auto-populates the Medicine Name field with the currently searched drug, saving extra typing.'
+      },
+      {
+        icon: <Bot size={15} color="#8b5cf6" />,
+        text: 'AI Development Context System: Established AGENTS.md and a docs/ai/ knowledge base so future AI coding sessions can orient to the codebase instantly without re-scanning files.'
+      }
+    ]
+  },
+  {
     version: 'v1.3.0',
     date: 'September 27, 2026',
-    isLatest: true,
+    isLatest: false,
     tag: 'Autocomplete & UX',
     title: 'Instant Search Autocomplete, Card Carousel, Auto-Geolocation & Issue Reporting',
     highlights: [

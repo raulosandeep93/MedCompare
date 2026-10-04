@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, CheckCircle2, Send, AlertTriangle, Loader2 } from 'lucide-react';
 import { reportIssue } from '../utils/api';
 
@@ -23,15 +23,30 @@ const PLATFORMS = [
   'Amazon Pharmacy'
 ];
 
-export default function ReportIssueModal({ isOpen, onClose, currentMedicine = '' }) {
+export default function ReportIssueModal({
+  isOpen,
+  onClose,
+  currentMedicine = '',
+  initialPlatform = 'All Stores / General'
+}) {
   const [category, setCategory] = useState('price_mismatch');
-  const [platform, setPlatform] = useState('All Stores / General');
+  const [platform, setPlatform] = useState(initialPlatform || 'All Stores / General');
   const [medicineName, setMedicineName] = useState(currentMedicine || '');
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  // Sync medicine name & platform when modal opens or props update
+  useEffect(() => {
+    if (isOpen) {
+      setMedicineName(currentMedicine || '');
+      setPlatform(initialPlatform || 'All Stores / General');
+      setSubmitted(false);
+      setErrorMsg('');
+    }
+  }, [isOpen, currentMedicine, initialPlatform]);
 
   if (!isOpen) return null;
 
@@ -169,8 +184,13 @@ export default function ReportIssueModal({ isOpen, onClose, currentMedicine = ''
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
-                  Medicine Name (Optional)
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+                  <span>Medicine Name</span>
+                  {medicineName && medicineName === currentMedicine && (
+                    <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, background: 'rgba(16, 185, 129, 0.1)', padding: '1px 6px', borderRadius: '4px' }}>
+                      Auto-filled from search
+                    </span>
+                  )}
                 </label>
                 <input
                   type="text"

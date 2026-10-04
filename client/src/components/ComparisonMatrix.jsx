@@ -13,7 +13,7 @@ const ORDERED_PLATFORMS = [
   'amazon'
 ];
 
-export default function ComparisonMatrix({ data, pincode, city, onOpenPincode }) {
+export default function ComparisonMatrix({ data, pincode, city, onOpenPincode, onOpenReportIssue }) {
   const [viewMode, setViewMode] = useState('carousel'); // 'carousel' | 'table'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'quick' | 'discount'
   const [sortMode, setSortMode] = useState('price-low'); // 'price-low' | 'speed' | 'default'
@@ -28,20 +28,17 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
   const startX = useRef(0);
   const scrollLeftPos = useRef(0);
 
-  if (!data || !data.platforms) {
-    return null;
-  }
+  // Derive platform data safely — must be before hooks but after useState
+  const platforms = data?.platforms || {};
+  const winners = data?.comparison || {};
 
-  const { platforms, comparison } = data;
-  const winners = comparison || {};
+  const platformKeys = data
+    ? [
+        ...ORDERED_PLATFORMS.filter(k => platforms[k]),
+        ...Object.keys(platforms).filter(k => !ORDERED_PLATFORMS.includes(k))
+      ]
+    : [];
 
-  // Sort available platforms based on our canonical order, plus any others
-  const platformKeys = [
-    ...ORDERED_PLATFORMS.filter(k => platforms[k]),
-    ...Object.keys(platforms).filter(k => !ORDERED_PLATFORMS.includes(k))
-  ];
-
-  // Filter keys based on active filter
   const filteredKeys = platformKeys.filter(key => {
     const p = platforms[key];
     const item = p?.topItem;
@@ -54,16 +51,12 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
     return true;
   });
 
-  // Sort platforms so the top 3 best matching/priced platforms appear first
   const sortedKeys = [...filteredKeys].sort((a, b) => {
     const itemA = platforms[a]?.topItem;
     const itemB = platforms[b]?.topItem;
-
-    // In-stock items first
     if (itemA && !itemB) return -1;
     if (!itemA && itemB) return 1;
     if (!itemA && !itemB) return 0;
-
     if (sortMode === 'price-low') {
       const priceA = parseFloat(itemA.unitPrice) || 999999;
       const priceB = parseFloat(itemB.unitPrice) || 999999;
@@ -85,7 +78,6 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
     setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-
     const slide = carouselRef.current.querySelector('.carousel-slide');
     if (slide && slide.offsetWidth > 0) {
       const idx = Math.round(scrollLeft / (slide.offsetWidth + 20));
@@ -105,12 +97,16 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
     };
   }, [updateScrollState, viewMode]);
 
-  // Reset scroll to beginning when query, filter, or sort changes
   useEffect(() => {
     if (carouselRef.current) {
       carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
     }
   }, [data?.query, filterMode, sortMode]);
+
+  // Guard: render nothing if no data yet — must be AFTER all hooks
+  if (!data || !data.platforms) {
+    return null;
+  }
 
   const handleScrollBy = (dir) => {
     if (!carouselRef.current) return;
@@ -379,6 +375,7 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
                   platformKey={key}
                   platformData={platforms[key]}
                   comparisonWinners={winners}
+                  onOpenReportIssue={onOpenReportIssue}
                 />
               </div>
             ))}
@@ -492,6 +489,42 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode })
           </table>
         </div>
       )}
+
+      {/* Price Discrepancy / Report Issue Prompt */}
+      <div style={{
+        marginTop: '1.25rem',
+        padding: '0.85rem 1.25rem',
+        background: 'var(--bg-card)',
+        borderRadius: '12px',
+        border: '1px dashed var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.75rem',
+        fontSize: '0.8125rem',
+        color: 'var(--text-muted)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>💡 Notice a price discrepancy, out-of-stock item, or broken pharmacy link for <strong>{data?.query || 'this medicine'}</strong>?</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onOpenReportIssue?.(data?.query || data?.medicineInfo?.medicineName, null)}
+          style={{
+            background: 'rgba(245, 158, 11, 0.12)',
+            color: '#d97706',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            borderRadius: '6px',
+            padding: '0.35rem 0.75rem',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+        >
+          Report this issue
+        </button>
+      </div>
     </div>
   );
 }
