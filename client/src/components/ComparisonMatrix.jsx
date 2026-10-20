@@ -13,7 +13,7 @@ const ORDERED_PLATFORMS = [
   'amazon'
 ];
 
-export default function ComparisonMatrix({ data, pincode, city, onOpenPincode, onOpenReportIssue }) {
+export default function ComparisonMatrix({ data, pincode, city, platformAvailability, onOpenPincode, onOpenReportIssue }) {
   const [viewMode, setViewMode] = useState('carousel'); // 'carousel' | 'table'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'quick' | 'discount'
   const [sortMode, setSortMode] = useState('price-low'); // 'price-low' | 'speed' | 'default'
@@ -375,6 +375,7 @@ export default function ComparisonMatrix({ data, pincode, city, onOpenPincode, o
                   platformKey={key}
                   platformData={platforms[key]}
                   comparisonWinners={winners}
+                  platformAvailable={platformAvailability ? platformAvailability[key]?.available : undefined}
                   onOpenReportIssue={onOpenReportIssue}
                 />
               </div>

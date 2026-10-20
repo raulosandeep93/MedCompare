@@ -3,9 +3,51 @@ import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, 
 
 const RELEASES = [
   {
+    version: 'v1.4.2',
+    date: 'October 5, 2026',
+    isLatest: true,
+    tag: 'UX Improvement',
+    title: 'Platform Availability Shown Inline on Cards',
+    highlights: [
+      {
+        icon: <MapPin size={15} color="#ef4444" />,
+        text: 'Cleaner Homepage Layout: Removed the standalone platform availability bar to reclaim space on the page.'
+      },
+      {
+        icon: <CheckCircle2 size={15} color="#10b981" />,
+        text: 'Inline Availability Status: Each pharmacy card in the carousel now clearly shows "Not available for your location" (with a location icon and dashed border) when a platform doesn\'t deliver to your PIN code.'
+      },
+      {
+        icon: <Layers size={15} color="#8b5cf6" />,
+        text: 'Better Empty State Distinction: Cards now differentiate between a platform that doesn\'t service your area vs. a platform that simply doesn\'t list the specific medicine you searched.'
+      }
+    ]
+  },
+  {
+    version: 'v1.4.1',
+    date: 'October 5, 2026',
+    isLatest: false,
+    tag: 'Geolocation & Fix',
+    title: 'High-Accuracy Geolocation & Pune Pincode Resolution Fix',
+    highlights: [
+      {
+        icon: <MapPin size={15} color="#10b981" />,
+        text: 'Accurate Pune Pincode Geocoding: Fixed an OpenStreetMap polygon glitch that erroneously assigned Ward 6 (411011) to Eastern Pune neighborhoods. Viman Nagar, Vadgaon Sheri, and Kharadi now accurately resolve to 411014.'
+      },
+      {
+        icon: <Zap size={15} color="#3b82f6" />,
+        text: 'High-Accuracy WiFi/GPS Positioning: Geolocation requests now enable high accuracy by default, preventing desktop and laptop browsers from falling back to coarse ISP exchange coordinates.'
+      },
+      {
+        icon: <CheckCircle2 size={15} color="#8b5cf6" />,
+        text: 'Preserved Delivery Location Preference: Manually selected delivery PIN codes are now permanently respected and will not be silently overwritten on homepage refresh.'
+      }
+    ]
+  },
+  {
     version: 'v1.4.0',
     date: 'October 4, 2026',
-    isLatest: true,
+    isLatest: false,
     tag: 'Stability & AI',
     title: 'Critical Rendering Fix, Smart Issue Pre-fill & AI Agent Context',
     highlights: [
@@ -130,7 +172,7 @@ export default function ChangelogModal({ isOpen, onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="modal-card changelog-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{
@@ -158,7 +200,7 @@ export default function ChangelogModal({ isOpen, onClose }) {
         </div>
 
         <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="changelog-releases-grid">
             {RELEASES.map((rel) => (
               <div
                 key={rel.version}
@@ -168,7 +210,8 @@ export default function ChangelogModal({ isOpen, onClose }) {
                   borderRadius: '16px',
                   padding: '1.25rem',
                   position: 'relative',
-                  boxShadow: rel.isLatest ? '0 0 15px rgba(16, 185, 129, 0.1)' : 'none'
+                  boxShadow: rel.isLatest ? '0 0 15px rgba(16, 185, 129, 0.1)' : 'none',
+                  gridColumn: rel.isLatest ? '1 / -1' : undefined
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -208,7 +251,11 @@ export default function ChangelogModal({ isOpen, onClose }) {
                   {rel.title}
                 </h4>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: rel.isLatest ? 'repeat(auto-fill, minmax(220px, 1fr))' : '1fr',
+                  gap: '0.5rem'
+                }}>
                   {rel.highlights.map((h, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                       <span style={{ marginTop: '2px', flexShrink: 0 }}>{h.icon}</span>

@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-10-05
+
+### Fixed
+- **Erroneous 411011 Postal Code Geocoding**: Fixed OpenStreetMap Nominatim anomaly where Ward 6 (`postcode: 411011`) polygon was erroneously tagged across Eastern Pune (Kalyani Nagar, Vadgaon Sheri, Viman Nagar). Added locality matching and geographic bounding box correction (`lat 18.535-18.590`, `lng 73.902-73.970`) in both `server/src/services/pincodeService.js` and `client/src/utils/api.js` to accurately resolve to **411014** (and 411006 for Kalyani Nagar / Yerawada).
+- **Desktop/Laptop Coarse Geolocation Fallback**: Replaced `{ enableHighAccuracy: false }` with `getPreciseLocation` using `{ enableHighAccuracy: true, timeout: 9000 }` with coarse retry fallback, enabling WiFi BSSID trilateration instead of ISP exchange IP coordinates.
+- **Delivery Pincode Overwriting on Page Reload**: In `client/src/App.jsx`, manually set delivery PIN codes are now flagged with `isManual: true` in `localStorage`, preventing automatic background geolocation on homepage landing from clobbering user preferences.
+
+### Changed
+- Added `v1.4.1` release note entry in `client/src/components/ChangelogModal.jsx`.
+
+---
+
 ## 2026-10-04 (session end)
 
 ### Fixed

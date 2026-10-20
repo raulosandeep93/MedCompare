@@ -6,7 +6,7 @@
 ---
 
 ## 📅 Last Updated
-**2026-10-04**
+**2026-10-05**
 
 ---
 
@@ -16,20 +16,27 @@ MedCompare is a fully functioning, responsive web application comparing 8 pharma
 ---
 
 ## ✅ Recently Completed
-1. **Issue Reporting Email Dispatch via Gmail SMTP**:
+1. **Removed Standalone Platform Availability Bar; Moved Status Inline to Carousel Cards**:
+   - Removed `PlatformAvailabilityBar` component import/render from `App.jsx` and all related CSS from `index.css` to reclaim vertical space.
+   - Threaded `platformAvailability` prop through `ComparisonMatrix` → `ComparisonCard`.
+   - In `ComparisonCard`, `platformAvailable === false` now renders a "Not available for your location" state (red `MapPin` icon, dashed card border) clearly distinguishing delivery-unavailability from medicine-not-found.
+2. **High-Accuracy Geolocation & Pune Pincode Resolution Fix (411014 vs 411011)**:
+   - Fixed an OpenStreetMap Nominatim anomaly where an oversized polygon for Ward 6 (`postcode: 411011`) erroneously tagged Eastern Pune neighborhoods (Kalyani Nagar, Nagar Road, Wadgaon Sheri) as `411011`, and returned `411001` for Viman Nagar and Kharadi.
+   - Implemented `KNOWN_LOCALITY_PINCODES` and `resolvePuneAnomaly` in `server/src/services/pincodeService.js` and `client/src/utils/api.js` with geographic bounding box checks (`lat 18.535-18.590`, `lng 73.902-73.970`) and locality keyword matching (Viman Nagar, Vadgaon Sheri, Kharadi, Chandan Nagar, Somnath Nagar, Ramwadi) to map to **411014**.
+   - Added `getPreciseLocation` helper with `{ enableHighAccuracy: true, timeout: 9000 }` to invoke WiFi BSSID trilateration instead of coarse IP/cell tower geolocation.
+   - Updated `client/src/App.jsx` and `PincodeModal.jsx` to respect user's manual PIN selection (`isManual: true`) in `localStorage`, preventing background landing auto-detect from clobbering user choices.
+2. **Issue Reporting Email Dispatch via Gmail SMTP**:
    - Resolved email delivery failure by activating direct Gmail SMTP with verified Google App Password (`rduulyvuxcwtsxsc`) for `raulosandeep93@gmail.com`.
    - Updated `server/src/services/emailService.js` to prioritize direct Gmail SMTP over Resend's restricted free trial sandbox (`onboarding@resend.dev`).
    - Added dynamic `dotenv` reloading so configuration changes apply without requiring a hard server restart.
-2. **Auto-Populating Searched Medicine in Report Issue Modal**:
+3. **Auto-Populating Searched Medicine in Report Issue Modal**:
    - `client/src/components/ReportIssueModal.jsx` now automatically syncs with the active searched medicine or query whenever opened.
    - Wired up context across `Header.jsx`, `ComparisonMatrix.jsx`, and individual `ComparisonCard.jsx` platform cards with store-specific report buttons.
    - Added an **"Auto-filled from search"** badge in the modal UI.
-3. **Instant Search Autocomplete & Salt Categorization**:
+4. **Instant Search Autocomplete & Salt Categorization**:
    - Added debounced autocomplete dropdowns for both medicine names and active chemical salts.
-4. **Card Carousel for Alternative Formulations**:
+5. **Card Carousel for Alternative Formulations**:
    - Replaced vertical cards with a responsive horizontal carousel (3 on desktop, 2 on tablet, 1 on mobile).
-5. **Auto-Geolocation with Reverse Geocoding**:
-   - Browser geolocation on page load resolved to Indian PIN code via OpenStreetMap Nominatim.
 
 ---
 
@@ -50,11 +57,11 @@ MedCompare is a fully functioning, responsive web application comparing 8 pharma
 ---
 
 ## 📁 Recently Modified Areas
+- `server/src/services/pincodeService.js`
 - `client/src/App.jsx`
-- `client/src/components/ReportIssueModal.jsx`
-- `client/src/components/ComparisonMatrix.jsx`
-- `client/src/components/ComparisonCard.jsx`
-- `client/src/index.css`
+- `client/src/utils/api.js`
+- `client/src/components/PincodeModal.jsx`
+- `client/src/components/ChangelogModal.jsx`
 - `server/src/services/emailService.js`
 - `server/.env`
 - `server/data/issues.json`

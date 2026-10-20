@@ -8,9 +8,9 @@ import StripScannerModal from './components/StripScannerModal';
 import ReportIssueModal from './components/ReportIssueModal';
 import SuggestFeatureModal from './components/SuggestFeatureModal';
 import ChangelogModal from './components/ChangelogModal';
-import PlatformAvailabilityBar from './components/PlatformAvailabilityBar';
+
 import MedicineInfoPanel from './components/MedicineInfoPanel';
-import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation } from './utils/api';
+import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation, getPreciseLocation } from './utils/api';
 import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
 export default function App() {
@@ -132,14 +132,32 @@ export default function App() {
     // Initial check for currently stored in-memory location
     runAvailabilityCheck(pincode);
 
+    // If user explicitly set their preferred location manually,
+    // do not let background auto-geolocation overwrite it on reload.
+    let isManualSaved = false;
+    let savedPincode = null;
+    try {
+      const savedRaw = localStorage.getItem('medcompare_user_location');
+      if (savedRaw) {
+        const parsed = JSON.parse(savedRaw);
+        isManualSaved = parsed.isManual === true;
+        savedPincode = parsed.pincode;
+      }
+    } catch {}
+
+    // Respect user's explicit manual pincode (unless it was the old erroneous 411011)
+    if (isManualSaved && savedPincode && savedPincode !== '411011') {
+      return;
+    }
+
     if (!navigator.geolocation) {
       return;
     }
 
     setLocationStatus('detecting');
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
+    getPreciseLocation({ timeout: 9000 })
+      .then(async (position) => {
         try {
           const { latitude, longitude } = position.coords;
           const loc = await reverseGeocodeLocation(latitude, longitude);
@@ -158,6 +176,7 @@ export default function App() {
                 state: loc.state,
                 lat: latitude,
                 lng: longitude,
+                isManual: false,
                 updatedAt: Date.now()
               }));
             } catch {}
@@ -171,14 +190,12 @@ export default function App() {
           console.warn('Auto-location reverse geocoding failed:', err);
           setLocationStatus('idle');
         }
-      },
-      (err) => {
+      })
+      .catch((err) => {
         // User denied or browser error – retain in-memory location without disturbing user
         console.log('Location permission not granted or unavailable:', err.message);
         setLocationStatus('denied');
-      },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
-    );
+      });
   }, [runAvailabilityCheck]);
 
   const executeSearch = async (searchQuery, targetPin = pincode) => {
@@ -228,7 +245,7 @@ export default function App() {
     }
   };
 
-  const handlePincodeChange = (newPin, newCity) => {
+  const handlePincodeChange = (newPin, newCity, meta = {}) => {
     setPincode(newPin);
     if (newCity) setCity(newCity);
     setLocationStatus('detected');
@@ -236,6 +253,7 @@ export default function App() {
       localStorage.setItem('medcompare_user_location', JSON.stringify({
         pincode: newPin,
         city: newCity || city,
+        isManual: meta.isManual !== false,
         updatedAt: Date.now()
       }));
     } catch {}
@@ -283,13 +301,6 @@ export default function App() {
       />
 
       <main className="app-container">
-        {/* Platform Delivery Availability Bar */}
-        <PlatformAvailabilityBar
-          availability={platformAvailability}
-          loading={availabilityLoading}
-          pincode={pincode}
-          onRefresh={() => runAvailabilityCheck(pincode)}
-        />
 
         <SearchSection
           searchMode={searchMode}
@@ -342,6 +353,7 @@ export default function App() {
               data={data}
               pincode={pincode}
               city={city}
+              platformAvailability={platformAvailability}
               onOpenPincode={() => setIsPincodeModalOpen(true)}
               onOpenReportIssue={handleOpenReportIssue}
             />

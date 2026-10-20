@@ -1,8 +1,11 @@
 import React from 'react';
-import { ExternalLink, Zap, Award, Tag, Clock, ShieldCheck, CheckCircle2, AlertCircle, FlaskConical } from 'lucide-react';
+import { ExternalLink, Zap, Award, Tag, Clock, ShieldCheck, CheckCircle2, AlertCircle, FlaskConical, MapPin } from 'lucide-react';
 
-export default function ComparisonCard({ platformKey, platformData, comparisonWinners, onOpenReportIssue }) {
+export default function ComparisonCard({ platformKey, platformData, comparisonWinners, platformAvailable, onOpenReportIssue }) {
   const { platformName, topItem } = platformData;
+
+  // Explicitly unavailable for this pincode (from the availability probe)
+  const isUnavailableForLocation = platformAvailable === false;
 
   const isLowestUnit = comparisonWinners?.lowestUnitPrice?.platform === platformKey;
   const isFastestDelivery = comparisonWinners?.fastestDelivery?.platform === platformKey;
@@ -42,7 +45,7 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
   };
 
   return (
-    <div className={`platform-column-card ${isLowestUnit ? 'is-winner' : ''}`}>
+    <div className={`platform-column-card ${isLowestUnit ? 'is-winner' : ''} ${isUnavailableForLocation ? 'is-location-unavailable' : ''}`}>
       {getWinnerRibbon()}
 
       <div className="platform-header">
@@ -51,7 +54,7 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
             {platformName}
           </span>
         </div>
-        {topItem && (
+        {topItem && !isUnavailableForLocation && (
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
             {topItem.inStock ? '🟢 Available' : '🔴 Out of Stock'}
           </span>
@@ -59,7 +62,38 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
       </div>
 
       <div className="platform-body">
-        {topItem ? (
+        {isUnavailableForLocation ? (
+          /* ── Not delivering to this pincode ── */
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '3rem 1rem',
+            textAlign: 'center',
+            color: 'var(--text-muted)'
+          }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              background: 'rgba(239, 68, 68, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '0.85rem'
+            }}>
+              <MapPin size={22} color="#ef4444" style={{ opacity: 0.7 }} />
+            </div>
+            <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem' }}>
+              Not available for your location
+            </h4>
+            <p style={{ fontSize: '0.8125rem', lineHeight: 1.5, maxWidth: 200 }}>
+              {platformName} doesn't currently deliver to your PIN code.
+            </p>
+          </div>
+        ) : topItem ? (
           <>
             <h3 className="medicine-name" title={topItem.name}>
               {topItem.name}
@@ -170,6 +204,7 @@ export default function ComparisonCard({ platformKey, platformData, comparisonWi
             </button>
           </>
         ) : (
+          /* ── Medicine not listed on this platform ── */
           <div style={{
             flex: 1,
             display: 'flex',

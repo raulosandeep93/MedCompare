@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, MapPin, CheckCircle, Navigation } from 'lucide-react';
-import { lookupPincode, reverseGeocodeLocation } from '../utils/api';
+import { lookupPincode, reverseGeocodeLocation, getPreciseLocation } from '../utils/api';
 
 const POPULAR_PRESETS = [
   { pin: '560001', city: 'Bengaluru', state: 'Karnataka' },
@@ -33,13 +33,13 @@ export default function PincodeModal({ isOpen, onClose, currentPincode, onSelect
     try {
       const data = await lookupPincode(pin);
       if (data.valid) {
-        onSelectPincode(pin, data.city, data);
+        onSelectPincode(pin, data.city, { ...data, isManual: true });
         onClose();
       } else {
         setError(data.message || 'Pincode not found');
       }
     } catch {
-      onSelectPincode(pin, 'India', null);
+      onSelectPincode(pin, 'India', { isManual: true });
       onClose();
     } finally {
       setLoading(false);
@@ -53,13 +53,14 @@ export default function PincodeModal({ isOpen, onClose, currentPincode, onSelect
     }
     setGpsLoading(true);
     setError('');
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+
+    getPreciseLocation({ timeout: 9000 })
+      .then(async (pos) => {
         try {
           const loc = await reverseGeocodeLocation(pos.coords.latitude, pos.coords.longitude);
           if (loc && loc.pincode) {
             setInputPin(loc.pincode);
-            onSelectPincode(loc.pincode, loc.city, loc);
+            onSelectPincode(loc.pincode, loc.city, { ...loc, isManual: false });
             onClose();
           } else {
             setError('Could not resolve PIN code for your coordinates.');
@@ -69,13 +70,11 @@ export default function PincodeModal({ isOpen, onClose, currentPincode, onSelect
         } finally {
           setGpsLoading(false);
         }
-      },
-      (err) => {
+      })
+      .catch((err) => {
         setError(err.message || 'Location permission was denied.');
         setGpsLoading(false);
-      },
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
+      });
   };
 
   return (
