@@ -3,9 +3,34 @@ import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, 
 
 const RELEASES = [
   {
-    version: 'v1.8.0',
+    version: 'v1.8.1',
     date: 'November 2, 2026',
     isLatest: true,
+    tag: 'Chrome Extension',
+    title: 'Smart Medicine Extraction & Prominent "Currently Comparing" Header in Extension',
+    highlights: [
+      {
+        icon: <Search size={15} color="#10b981" />,
+        text: 'Prominent "Currently Comparing" Banner: Sidebar and popup now feature a glowing status badge, explicit source platform tag, and bold medicine title so you always know which medicine is being compared.'
+      },
+      {
+        icon: <ShieldCheck size={15} color="#3b82f6" />,
+        text: 'Anti-Boilerplate Slogan Filtering: Eliminated bug where pharmacy store slogans (e.g. Truemeds SEO heading) were misidentified as medicine names; intelligent filters reject marketing copy across all 8 platforms.'
+      },
+      {
+        icon: <Zap size={15} color="#f59e0b" />,
+        text: 'Multi-Layered Fallback Engine: Added DOM traversal, breadcrumb parsing, URL slug cleaning, and meta tag extraction to guarantee accurate medicine names on Truemeds, Tata 1mg, Apollo, and others.'
+      },
+      {
+        icon: <SlidersHorizontal size={15} color="#8b5cf6" />,
+        text: 'Inline Medicine Switcher: Instant "✏️ Change" button and inline search bar directly inside the extension sidebar to easily compare or refine any medicine without leaving the page.'
+      }
+    ]
+  },
+  {
+    version: 'v1.8.0',
+    date: 'November 2, 2026',
+    isLatest: false,
     tag: 'UX Redesign',
     title: 'Interactive 3-Card Result Hub — Eliminating Scroll Fatigue with Focused Sections',
     highlights: [

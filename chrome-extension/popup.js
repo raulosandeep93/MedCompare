@@ -48,18 +48,22 @@ async function detectCurrentPage() {
         setStatusNotFound();
         return;
       }
-      setStatusFound(response.medicineName, tab.id);
+      setStatusFound(response.medicineName, tab.id, response.siteName);
     });
   } catch (e) {
     setStatusNotFound();
   }
 }
 
-function setStatusFound(medicineName, tabId) {
+function setStatusFound(medicineName, tabId, siteName) {
+  const fromTag = siteName ? ` from ${siteName}` : '';
   statusSection.innerHTML = `
     <div class="status-found">
       <span class="status-dot found"></span>
-      <span>Detected: <span class="status-med-name">${esc(medicineName)}</span></span>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 10px; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Currently Comparing${esc(fromTag)}:</div>
+        <div class="status-med-name" style="font-weight: 800; font-size: 13px; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(medicineName)}</div>
+      </div>
       <button class="status-compare-btn" id="status-compare-btn">Compare</button>
     </div>
   `;

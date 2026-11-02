@@ -7,6 +7,13 @@
 ## 2026-11-02
 
 ### Added
+- **Smart Medicine Detection & "Currently Comparing" Header in Chrome Extension (`v1.8.1`)**:
+  - **Fixed Slogan Extraction Bug**: Eliminated bug where generic `h1` selectors on pharmacy sites extracted boilerplate marketing slogans (e.g. Truemeds' `"Order Medicines Online with Truemeds, India's Trusted E-Pharmacy"`) instead of the medicine name (`Neurobion Forte Tablet 30`).
+  - **Intelligent Anti-Boilerplate Filtering (`isBoilerplateOrGenericText`)**: Added regex-based screening that rejects site slogans, e-commerce navigation terms, and generic branding across all supported platforms.
+  - **4-Layer Resilient Extraction Pipeline**: Added non-header DOM traversal, breadcrumb hierarchy parsing, URL slug extraction with SKU cleaning, and OpenGraph/meta tag fallbacks across all 8 pharmacy platforms.
+  - **Prominent "CURRENTLY COMPARING" Header**: Added dedicated status banner with a pulsing live green dot, platform tag (`From Truemeds`), and bold medicine title to make the active medicine immediately identifiable in the sidebar and popup.
+  - **Interactive Inline Switcher**: Added an inline `"✏️ Change"` toggle and search form directly inside the sidebar header so users can refine search terms or compare other medicines without leaving the page.
+  - **Enhanced Floating Trigger**: Trigger button now displays the detected medicine name (`Compare on 8 Stores: Neurobion Forte...`).
 - **Interactive 3-Card Result Hub (`v1.8.0`)**:
   - **3-Card Section Navigation (`ResultHubNav.jsx`)**: Replaced long vertical page stacking with an interactive 3-card hub allowing users to tap between Store Comparison, Generic Substitutes, and Medicine Info & Safety.
   - **Live Preview Badges**: Each card displays summary micro-metrics (e.g. lowest price ₹/tab, fastest SLA, generic savings %, active salt) before clicking.

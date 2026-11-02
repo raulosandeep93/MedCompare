@@ -16,7 +16,16 @@ MedCompare is a fully functioning, responsive web application comparing 8 pharma
 ---
 
 ## ✅ Recently Completed
-1. **Interactive 3-Card Result Hub (`v1.8.0`)**:
+1. **Chrome Extension Medicine Detection & "Currently Comparing" Header (`v1.8.1`)**:
+   - Fixed bug where pharmacy platform SEO boilerplate slogans (such as Truemeds' `"Order Medicines Online with Truemeds, India's Trusted E-Pharmacy"`) were erroneously matched by generic `h1` selectors and sent to search instead of the real product title (`Neurobion Forte Tablet 30`).
+   - Implemented intelligent anti-boilerplate rejection filter (`isBoilerplateOrGenericText`) screening out e-commerce slogans, marketing copy, and site taglines.
+   - Built resilient 4-layer extraction pipeline across all 8 platforms: non-header DOM traversal, breadcrumb inspection, URL slug decoding with SKU stripping, and OpenGraph/meta tag normalization.
+   - Designed prominent `"CURRENTLY COMPARING"` banner in the extension sidebar and popup featuring a pulsing live green dot, explicit source platform tag (`From Truemeds`), and bold medicine title.
+   - Fixed stale closure bug in floating trigger button click handler where navigating between medicines in SPAs (e.g. from Neurobion Forte to Ondet 4) updated the button text but retained the old medicine in the click event closure.
+   - Dynamically re-runs search when navigating between products while the sidebar is open.
+   - Built inline `"✏️ Change"` toggle and search form directly inside the sidebar to let users refine dosage or search any alternative medicine without leaving the page.
+   - Enhanced floating page trigger button to display detected medicine name badge (`Compare on 8 Stores: Neurobion Forte...`).
+2. **Interactive 3-Card Result Hub (`v1.8.0`)**:
    - Replaced long vertical scrolling with an interactive 3-card hub ([`ResultHubNav.jsx`](file:///home/anisha/Desktop/Sandeep/MedCompare/client/src/components/ResultHubNav.jsx)) allowing users to tap between Store Comparison, Generic Substitutes, and Medicine Info & Safety.
    - Built physical visual bridge with downward connector notches (`▼`), ordinal tab labels (`TAB 1`, `TAB 2`, `TAB 3`), animated live pulse badges (`● VIEWING THIS SECTION`), and explicit action button pills (`Switch to Generics →`).
    - Added in-situ visual connector banner directly underneath the tab cards highlighting the active section with a click hint.
