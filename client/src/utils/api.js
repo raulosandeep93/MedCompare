@@ -212,3 +212,41 @@ export async function fetchSuggestions(query, mode = 'name') {
     return [];
   }
 }
+
+export async function getFeatureSuggestions() {
+  const res = await fetch(apiUrl('/api/feature-suggestions'));
+  if (!res.ok) {
+    throw new Error('Failed to fetch feature suggestions');
+  }
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function submitFeatureSuggestion(payload) {
+  const res = await fetch(apiUrl('/api/feature-suggestions'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to submit feature suggestion');
+  }
+  const json = await res.json();
+  return json.data;
+}
+
+export async function voteFeatureSuggestion(id, action = 'upvote') {
+  const res = await fetch(apiUrl(`/api/feature-suggestions/${encodeURIComponent(id)}/vote`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to update vote');
+  }
+  const json = await res.json();
+  return json.data;
+}
+

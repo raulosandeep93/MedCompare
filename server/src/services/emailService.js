@@ -107,9 +107,16 @@ function generateEmailHtml(report) {
 
 // Send email notification using Nodemailer or Resend
 export async function sendIssueNotificationEmail(report) {
-  // Always load latest values from .env if present
+  // Always load latest values from .env if present (support both server/.env and project root .env)
   try {
-    dotenv.config({ path: ENV_FILE, override: true });
+    const serverEnv = path.join(__dirname, '../../.env');
+    const rootEnv = path.join(__dirname, '../../../.env');
+    if (fs.existsSync(serverEnv)) {
+      dotenv.config({ path: serverEnv, override: true });
+    }
+    if (fs.existsSync(rootEnv)) {
+      dotenv.config({ path: rootEnv, override: false });
+    }
   } catch {}
 
   // 1. Always save a permanent local copy

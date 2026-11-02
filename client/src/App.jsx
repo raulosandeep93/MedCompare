@@ -397,98 +397,42 @@ export default function App() {
           </>
         )}
 
-        {/* How It Works Feature Cards */}
-        <section style={{ marginTop: '4rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-              Why Compare on MedCompare?
-            </h3>
-            <p style={{ fontSize: '0.9375rem', color: 'var(--text-muted)' }}>
+        {/* Why Compare Feature Cards */}
+        <section className="why-compare-section">
+          <div className="why-compare-header">
+            <h3 className="why-compare-title">Why Compare on MedCompare?</h3>
+            <p className="why-compare-subtitle">
               Different pharmacy apps in India charge different prices for the exact same drug
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'rgba(16, 185, 129, 0.1)',
-                color: '#10b981',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem'
-              }}>
+          <div className="why-compare-grid">
+            <div className="why-card">
+              <div className="why-card-icon" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
                 <TrendingDown size={20} />
               </div>
-              <h4 style={{ fontSize: '1.0625rem', fontWeight: 700, marginBottom: '0.4rem' }}>
-                Per-Tablet Normalization
-              </h4>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              <h4 className="why-card-title">Per-Tablet Normalization</h4>
+              <p className="why-card-desc">
                 Apollo might sell a 30s pack while Truemeds sells a 15s pack. We normalize everything to <strong>₹ / tablet</strong> so you never get tricked by pack size differences.
               </p>
             </div>
 
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'rgba(59, 130, 246, 0.1)',
-                color: '#3b82f6',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem'
-              }}>
+            <div className="why-card">
+              <div className="why-card-icon" style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}>
                 <Zap size={20} />
               </div>
-              <h4 style={{ fontSize: '1.0625rem', fontWeight: 700, marginBottom: '0.4rem' }}>
-                Live Delivery SLAs
-              </h4>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              <h4 className="why-card-title">Live Delivery SLAs</h4>
+              <p className="why-card-desc">
                 Need it in 2 hours? Choose Apollo. Ordering a monthly chronic refill? Choose Truemeds or PlatinumRx to save up to 70% with 24-48h delivery.
               </p>
             </div>
 
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'rgba(139, 92, 246, 0.1)',
-                color: '#8b5cf6',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem'
-              }}>
+            <div className="why-card">
+              <div className="why-card-icon" style={{ background: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}>
                 <ShieldCheck size={20} />
               </div>
-              <h4 style={{ fontSize: '1.0625rem', fontWeight: 700, marginBottom: '0.4rem' }}>
-                Unbiased Platform Choice
-              </h4>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              <h4 className="why-card-title">Unbiased Platform Choice</h4>
+              <p className="why-card-desc">
                 We don't lock you in. We give you full transparency and direct 1-click links to buy from the pharmacy that gives you the best deal.
               </p>
             </div>
@@ -497,10 +441,13 @@ export default function App() {
 
         {/* Footer */}
         <footer className="app-footer">
-          <p>
-            MedCompare India • Unifying Medicine Pricing Across 8 Leading Platforms: Apollo Pharmacy, PharmEasy, Tata 1mg, Netmeds, Truemeds, PlatinumRx, Zepto & Amazon Pharmacy.
-          </p>
-          <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-subtle)' }}>
+          <div className="footer-platform-row">
+            {['Apollo', 'PharmEasy', 'Tata 1mg', 'Netmeds', 'Truemeds', 'PlatinumRx', 'Zepto', 'Amazon'].map(p => (
+              <span key={p} className="footer-platform-tag">{p}</span>
+            ))}
+          </div>
+          <p className="footer-tagline">MedCompare India • Unifying Medicine Pricing Across 8 Leading Platforms</p>
+          <p className="footer-legal">
             All trademarks, logos, and pharmacy names belong to their respective owners. Live pricing and availability are fetched in real-time.
           </p>
         </footer>

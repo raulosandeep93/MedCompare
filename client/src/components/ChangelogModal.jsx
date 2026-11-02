@@ -3,9 +3,63 @@ import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, 
 
 const RELEASES = [
   {
-    version: 'v1.5.0',
+    version: 'v1.7.0',
     date: 'November 2, 2026',
     isLatest: true,
+    tag: 'Community Roadmap',
+    title: 'Live Community Feature Suggestions & Persistent Upvoting Roadmap',
+    highlights: [
+      {
+        icon: <Sparkles size={15} color="#3b82f6" />,
+        text: 'Real User Feature Submissions: Cleaned mock placeholder data. Suggestions submitted by users are now verified, stored in the backend, and rendered in real time.'
+      },
+      {
+        icon: <Zap size={15} color="#10b981" />,
+        text: 'Live Community Upvoting: Users can upvote features with instant optimistic feedback, backend synchronization, and persistent vote tracking via localStorage.'
+      },
+      {
+        icon: <ShieldCheck size={15} color="#8b5cf6" />,
+        text: 'Privacy-Conscious Feedback: Optional submitter email is safely isolated on the backend for release notifications without exposing private contact info to public feeds.'
+      },
+      {
+        icon: <CheckCircle2 size={15} color="#10b981" />,
+        text: 'Polished Empty & Loading States: Welcoming zero-state for new ideas, category badges, relative timestamp badges, and inline validation.'
+      }
+    ]
+  },
+  {
+    version: 'v1.6.0',
+    date: 'November 2, 2026',
+    isLatest: false,
+    tag: 'UI/UX Uplift',
+    title: 'Full Responsive Overhaul — Mobile Navigation Drawer, Windows & Mobile Browser Compatibility',
+    highlights: [
+      {
+        icon: <Zap size={15} color="#10b981" />,
+        text: 'Mobile Navigation Drawer: Brand-new bottom-sheet menu on small screens giving full access to How It Works, Suggest Feature, Report Issue, Changelog, and Theme Toggle — previously hidden on mobile.'
+      },
+      {
+        icon: <SlidersHorizontal size={15} color="#3b82f6" />,
+        text: 'Dynamic Viewport Units (dvh): Modals now use dvh units instead of vh, fixing layout issues with Chrome and Safari\'s collapsible address bars on iOS and Android.'
+      },
+      {
+        icon: <ShieldCheck size={15} color="#8b5cf6" />,
+        text: 'Safe Area Insets: Header, footer, and drawer respect notch/safe-area-inset-* for modern phones (iPhone X+, Android Notch devices).'
+      },
+      {
+        icon: <TrendingDown size={15} color="#f59e0b" />,
+        text: 'Fluid Typography: Hero title, subtitles, and section headers now use clamp() for smooth scaling between mobile and desktop without jarring size jumps.'
+      },
+      {
+        icon: <CheckCircle2 size={15} color="#10b981" />,
+        text: 'Reduced Motion & Accessibility: Comprehensive prefers-reduced-motion support, focus-visible keyboard outlines, and hover-none media query for touch devices.'
+      }
+    ]
+  },
+  {
+    version: 'v1.5.0',
+    date: 'November 2, 2026',
+    isLatest: false,
     tag: 'Major Feature',
     title: 'First-Time Welcome Guide, Chronic Refill Annual Calculator & Category Bubbles',
     highlights: [

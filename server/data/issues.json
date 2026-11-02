@@ -1,5 +1,35 @@
 [
   {
+    "id": "issue_1793632471172_etvt6",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch",
+    "platform": "Tata 1mg",
+    "medicineName": "Telma 40",
+    "description": "Live test from API endpoint",
+    "email": "test@example.com",
+    "timestamp": "2026-11-02T15:14:31.172Z",
+    "userAgent": "curl/7.81.0"
+  },
+  {
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch",
+    "platform": "Apollo Pharmacy",
+    "medicineName": "Dolo 650",
+    "description": "Testing automated issue reporting email dispatch from MedCompare.",
+    "email": "user@example.com"
+  },
+  {
+    "id": "issue_1793632267863_lbn3e",
+    "category": "price_mismatch",
+    "categoryLabel": "Price Mismatch / Incorrect MRP",
+    "platform": "All Stores / General",
+    "medicineName": "Test",
+    "description": "Test",
+    "email": "",
+    "timestamp": "2026-11-02T15:11:07.863Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
+  },
+  {
     "id": "issue_1791125660024_8bkd3",
     "category": "ui_bug",
     "categoryLabel": "Website Glitch or UI Bug",

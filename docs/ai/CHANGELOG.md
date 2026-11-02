@@ -7,6 +7,17 @@
 ## 2026-11-02
 
 ### Added
+- **Live Community Feature Suggestions & Real-Time Upvoting (`v1.7.0`)**:
+  - **Cleaned Mock Data**: Removed hardcoded placeholder suggestions (`COMMUNITY_IDEAS`) and fake vote numbers from `SuggestFeatureModal.jsx`.
+  - **Persistent Backend Storage (`suggestionService.js`)**: Added server-side JSON file persistence in `server/data/feature_suggestions.json` with input sanitization, title/description validation, and privacy protection (submitter emails kept confidential).
+  - **API Endpoints (`server/src/routes/api.js` & `client/src/utils/api.js`)**: Added `GET /api/feature-suggestions`, `POST /api/feature-suggestions`, and `POST /api/feature-suggestions/:id/vote`.
+  - **Interactive Community Roadmap & Upvoting**: Enabled real-time upvoting and unvoting with optimistic UI updates and `localStorage` persistence (`medcompare_voted_features`) across user sessions.
+  - **Dedicated Zero-State & Category Styling**: Built an encouraging empty state when no ideas have been submitted yet, with colorful category badges (Platform Integration, Savings, OCR, Alerts, Convenience, Safety).
+- **Full Responsive Overhaul & UI/UX Uplift (`v1.6.0`)**:
+  - **Mobile Navigation Drawer (`Header.jsx`)**: Built an animated bottom drawer for mobile screens (<768px) housing "How It Works", "Suggest Feature", "Report Issue", "Changelog", and theme switcher to prevent header crowding on small mobile viewports.
+  - **Dynamic Viewport (`dvh`) & Safe Area Insets**: Converted modals and viewports to `100dvh` to handle mobile browser collapsible toolbars (Safari/Chrome), and added `safe-area-inset-*` margins for modern notched phones.
+  - **Touch & Accessibility**: Enforced 44px minimum tap targets, smooth momentum scrolling (`-webkit-overflow-scrolling: touch`), custom high-contrast focus rings (`:focus-visible`), and `prefers-reduced-motion` settings.
+  - **Windows Compatibility & Custom Scrollbars**: Refined custom dark/light mode scrollbars for Windows desktop Chromium/Firefox, improved fluid typography across screen sizes with CSS `clamp()`.
 - **First-Time User Welcome & Onboarding Guide Modal (`WelcomeGuideModal.jsx`)**: Automatic first-visit modal explaining platform purpose, 3-step usage guide, core benefits (10-min fast delivery, up to 70% generic savings, true unit prices), sample 1-tap searches, and a "Do not show this further" preference checkbox. Also adds a persistent "How it works" button in `Header.jsx`.
 - **Chronic Condition Annual Savings Calculator (`SubstituteSection.jsx`)**: Interactive 1-tab/day vs 2-tabs/day dosage toggle calculating yearly family savings (₹/year) when switching from expensive brand medicines to bio-equivalent generics. Includes side-by-side branded vs generic breakdown and CDSCO/WHO-GMP trust badges.
 - **High-Impact Generic Substitute Callout Banner (`ComparisonMatrix.jsx`)**: Prominent green gradient banner placed directly above the store comparison carousel highlighting savings % and providing 1-click smooth jump to generic alternatives.

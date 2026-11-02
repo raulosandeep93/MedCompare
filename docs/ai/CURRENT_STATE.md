@@ -16,7 +16,22 @@ MedCompare is a fully functioning, responsive web application comparing 8 pharma
 ---
 
 ## ✅ Recently Completed
-1. **First-Time User Welcome & Onboarding Guide Modal (`WelcomeGuideModal.jsx`)**:
+1. **Live Community Feature Suggestions & Real-Time Upvoting Roadmap (`v1.7.0`)**:
+   - Cleaned mock / placeholder ideas (`COMMUNITY_IDEAS`) and fake vote numbers from `SuggestFeatureModal.jsx`.
+   - Built server-side persistent storage in `server/src/services/suggestionService.js` writing to `server/data/feature_suggestions.json`.
+   - Exposed API endpoints: `GET /api/feature-suggestions`, `POST /api/feature-suggestions`, and `POST /api/feature-suggestions/:id/vote`.
+   - Added client API methods in `client/src/utils/api.js` for fetching, submitting, and voting.
+   - Built real upvoting/unvoting support with instant optimistic UI and `localStorage` vote tracking.
+   - Built privacy-conscious submission handling (optional submitter email preserved server-side, not leaked to client).
+   - Designed a friendly empty state card encouraging users to propose the first feature.
+   - Upgraded modal dialogs (`WelcomeGuideModal`, `SuggestFeatureModal`, `ReportIssueModal`) to dynamically adapt to screen size: expanded on desktop monitors (up to 1060px) to utilize screen real-estate, converted benefits and sample search buttons to 3-column and 4-column balanced layouts, and eliminated cramped vertical scrolling on large screens.
+   - Fixed auto-suggestion popup re-trigger bug: choosing an autocomplete suggestion or clicking quick condition bubbles previously triggered a secondary debounced fetch for the chosen term that reopened the dropdown; added `skipNameSuggestionsRef` suppression and unified `executeNameSearch` to close and clear suggestions instantly upon selection.
+2. **Full Responsive Overhaul & UI/UX Uplift (`v1.6.0`)**:
+   - **Mobile Navigation Drawer**: Added sleek slide-up drawer sheet for small screens (<768px) with quick access to "How It Works", "Suggest Feature", "Report Issue", "Changelog", and theme switcher, overcoming cramped header issues.
+   - **Windows & Mobile Viewport Compatibility**: Added `100dvh` dynamic viewport unit support for mobile address bar collapse (Safari/Chrome on iOS/Android), custom high-polish Windows overlay scrollbars with smooth scrolling and color transitions.
+   - **Touch & Accessibility Standards**: 44px minimum touch targets, `env(safe-area-inset-*)` padding for notched devices, `prefers-reduced-motion` compliance, `:focus-visible` accessible keyboard rings, and fluid typography using CSS `clamp()`.
+   - **Cross-Browser & Device Polish**: Tested across small screens (320px–480px), tablets (768px), and ultra-wide desktops (1440px+).
+2. **First-Time User Welcome & Onboarding Guide Modal (`WelcomeGuideModal.jsx`)**:
    - Automatic onboarding modal appearing on first landing explaining what MedCompare is, why pharmacies charge different prices, 3-step usage workflow, key benefits (10-min fast delivery, up to 70% generic savings, unit prices, 100% free/neutral), and 1-tap sample searches.
    - Includes "Do not show this further" preference checkbox persisted to `localStorage` (`medcompare_onboarding_dismissed`).
    - Added permanent "How it works" button in `Header.jsx` to let users reopen the guide at any time.

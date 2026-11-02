@@ -64,21 +64,30 @@ export default function SearchSection({
   const [saltSuggestions, setSaltSuggestions] = useState([]);
   const [showSaltSuggestions, setShowSaltSuggestions] = useState(false);
 
-  // Refs for outside-click detection
+  // Refs for outside-click detection and suggestion suppression
   const nameSearchWrapRef = useRef(null);
   const saltInputWrapRef = useRef(null);
+  const skipNameSuggestionsRef = useRef(false);
 
   // ── Debounced fetch for name search ──
   useEffect(() => {
+    if (skipNameSuggestionsRef.current) {
+      skipNameSuggestionsRef.current = false;
+      return;
+    }
+
     if (!query || query.trim().length < 2) {
       setNameSuggestions([]);
       setShowNameSuggestions(false);
       return;
     }
     const timer = setTimeout(async () => {
+      if (skipNameSuggestionsRef.current) return;
       const results = await fetchSuggestions(query, 'name');
-      setNameSuggestions(results);
-      setShowNameSuggestions(results.length > 0);
+      if (!skipNameSuggestionsRef.current) {
+        setNameSuggestions(results);
+        setShowNameSuggestions(results.length > 0);
+      }
     }, 220);
     return () => clearTimeout(timer);
   }, [query]);
@@ -112,10 +121,21 @@ export default function SearchSection({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Execute search and suppress auto-suggestion popup
+  const executeNameSearch = (searchTerm) => {
+    skipNameSuggestionsRef.current = true;
+    setShowNameSuggestions(false);
+    setNameSuggestions([]);
+    setQuery(searchTerm);
+    onSearch(searchTerm);
+  };
+
   // Submit name search
   const handleNameSubmit = (e) => {
     e.preventDefault();
+    skipNameSuggestionsRef.current = true;
     setShowNameSuggestions(false);
+    setNameSuggestions([]);
     if (query.trim()) {
       onSearch(query.trim());
     }
@@ -123,9 +143,7 @@ export default function SearchSection({
 
   // Handle name suggestion selection
   const handleNameSuggestionSelect = (item) => {
-    setQuery(item.name);
-    setShowNameSuggestions(false);
-    onSearch(item.name);
+    executeNameSearch(item.name);
   };
 
   // Handle salt suggestion selection
@@ -247,8 +265,11 @@ export default function SearchSection({
                   className="search-input-field"
                   placeholder="Search medicine name or salt (e.g. Dolo 650, Telma 40, Augmentin 625)..."
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => nameSuggestions.length > 0 && setShowNameSuggestions(true)}
+                  onChange={(e) => {
+                    skipNameSuggestionsRef.current = false;
+                    setQuery(e.target.value);
+                  }}
+                  onFocus={() => !skipNameSuggestionsRef.current && nameSuggestions.length > 0 && setShowNameSuggestions(true)}
                   id="medicine-search-input"
                   autoComplete="off"
                 />
@@ -294,10 +315,7 @@ export default function SearchSection({
                       key={cat.medicine}
                       type="button"
                       className={`category-bubble-btn ${isActive ? 'active' : ''}`}
-                      onClick={() => {
-                        setQuery(cat.medicine);
-                        onSearch(cat.medicine);
-                      }}
+                      onClick={() => executeNameSearch(cat.medicine)}
                       title={`Compare prices for ${cat.medicine} (${cat.label})`}
                     >
                       <span className="cat-icon">{cat.icon}</span>
@@ -321,10 +339,7 @@ export default function SearchSection({
                     <button
                       key={med.name}
                       className={`chip-btn ${isActive ? 'active' : ''}`}
-                      onClick={() => {
-                        setQuery(med.name);
-                        onSearch(med.name);
-                      }}
+                      onClick={() => executeNameSearch(med.name)}
                     >
                       {med.name}
                     </button>

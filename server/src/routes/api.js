@@ -5,6 +5,7 @@ import { extractMedicineFromImage, parsePharmaText } from '../services/ocrServic
 import { lookupPincode, getPopularPincodes, reverseGeocodeLocation } from '../services/pincodeService.js';
 import { POPULAR_COMPOSITIONS } from '../services/compositionService.js';
 import { sendIssueNotificationEmail, getAllSavedIssues } from '../services/emailService.js';
+import { getAllSuggestions, addSuggestion, voteSuggestion } from '../services/suggestionService.js';
 
 const router = express.Router();
 const aggregator = new MedicineAggregator();
@@ -385,6 +386,51 @@ router.post('/report-issue', async (req, res) => {
 router.get('/reports', (req, res) => {
   const issues = getAllSavedIssues();
   res.json({ success: true, count: issues.length, data: issues });
+});
+
+// 7. Community Feature Suggestions
+router.get('/feature-suggestions', (req, res) => {
+  try {
+    const suggestions = getAllSuggestions();
+    res.json({ success: true, count: suggestions.length, data: suggestions });
+  } catch (error) {
+    console.error('[API /feature-suggestions GET] Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/feature-suggestions', (req, res) => {
+  try {
+    const { title, category, description, email, authorName } = req.body;
+    if (!title || !title.trim() || !description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title and description are required.'
+      });
+    }
+
+    const created = addSuggestion({ title, category, description, email, authorName });
+    res.status(201).json({
+      success: true,
+      message: 'Feature suggestion submitted successfully.',
+      data: created
+    });
+  } catch (error) {
+    console.error('[API /feature-suggestions POST] Error:', error);
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/feature-suggestions/:id/vote', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action = 'upvote' } = req.body;
+    const updated = voteSuggestion(id, action);
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    console.error('[API /feature-suggestions/:id/vote POST] Error:', error);
+    res.status(400).json({ success: false, error: error.message });
+  }
 });
 
 export default router;
