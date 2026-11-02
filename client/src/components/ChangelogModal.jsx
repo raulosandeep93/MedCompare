@@ -3,9 +3,34 @@ import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, 
 
 const RELEASES = [
   {
-    version: 'v1.7.0',
+    version: 'v1.8.0',
     date: 'November 2, 2026',
     isLatest: true,
+    tag: 'UX Redesign',
+    title: 'Interactive 3-Card Result Hub — Eliminating Scroll Fatigue with Focused Sections',
+    highlights: [
+      {
+        icon: <Layers size={15} color="#3b82f6" />,
+        text: 'Interactive 3-Card Hub: Replaced endless vertical scrolling with clean, 1-tap navigation between Store Comparison, Generic Substitutes, and Clinical Medicine Info.'
+      },
+      {
+        icon: <TrendingDown size={15} color="#10b981" />,
+        text: 'Live Micro-Stats on Cards: Summary metrics (lowest store price, generic savings %, active chemical salt) visible right on the hub cards before tapping.'
+      },
+      {
+        icon: <SlidersHorizontal size={15} color="#f59e0b" />,
+        text: 'Flexible View Toggle: Instant toggle between Focused View (single section) and Show All Sections (stacked view for power users).'
+      },
+      {
+        icon: <Sparkles size={15} color="#8b5cf6" />,
+        text: 'Seamless Cross-Section Links: Generic callout banner smoothly switches to the Generics & Savings tab with automatic focus.'
+      }
+    ]
+  },
+  {
+    version: 'v1.7.0',
+    date: 'November 2, 2026',
+    isLatest: false,
     tag: 'Community Roadmap',
     title: 'Live Community Feature Suggestions & Persistent Upvoting Roadmap',
     highlights: [

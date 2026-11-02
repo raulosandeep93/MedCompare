@@ -7,6 +7,11 @@
 ## 2026-11-02
 
 ### Added
+- **Interactive 3-Card Result Hub (`v1.8.0`)**:
+  - **3-Card Section Navigation (`ResultHubNav.jsx`)**: Replaced long vertical page stacking with an interactive 3-card hub allowing users to tap between Store Comparison, Generic Substitutes, and Medicine Info & Safety.
+  - **Live Preview Badges**: Each card displays summary micro-metrics (e.g. lowest price ₹/tab, fastest SLA, generic savings %, active salt) before clicking.
+  - **Focused vs All View Toggle**: Added a toggle switch letting users choose between single-section focused view and traditional all-in-one stacked view.
+  - **Cross-Section Links**: Generic callout banner smoothly activates the Generics & Savings tab with automatic focus.
 - **Live Community Feature Suggestions & Real-Time Upvoting (`v1.7.0`)**:
   - **Cleaned Mock Data**: Removed hardcoded placeholder suggestions (`COMMUNITY_IDEAS`) and fake vote numbers from `SuggestFeatureModal.jsx`.
   - **Persistent Backend Storage (`suggestionService.js`)**: Added server-side JSON file persistence in `server/data/feature_suggestions.json` with input sanitization, title/description validation, and privacy protection (submitter emails kept confidential).

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedCompare</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-wrap">
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="popup-brand">
+        <span class="popup-logo">💊</span>
+        <div>
+          <div class="popup-title">MedCompare</div>
+          <div class="popup-sub">India's Medicine Price Engine</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Site detection status -->
+    <div class="popup-body">
+      <div id="status-section" class="status-section">
+        <div class="status-detecting">
+          <div class="status-dot detecting"></div>
+          <span>Checking current page…</span>
+        </div>
+      </div>
+
+      <!-- Manual search -->
+      <div class="search-section">
+        <label class="search-label" for="popup-search-input">Search any medicine</label>
+        <div class="search-row">
+          <input
+            type="text"
+            id="popup-search-input"
+            class="search-input"
+            placeholder="e.g. Dolo 650, Pan 40"
+            autocomplete="off"
+          />
+          <button class="search-btn" id="popup-search-btn" aria-label="Search">
+            🔍
+          </button>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div id="popup-results" class="popup-results hidden"></div>
+
+      <!-- Quick samples -->
+      <div class="quick-samples">
+        <div class="quick-label">Quick search:</div>
+        <div class="quick-chips">
+          <button class="quick-chip" data-med="Dolo 650">Dolo 650</button>
+          <button class="quick-chip" data-med="Pan 40">Pan 40</button>
+          <button class="quick-chip" data-med="Telma 40">Telma 40</button>
+          <button class="quick-chip" data-med="Augmentin 625">Augmentin 625</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <a href="https://medcompare-lac3.onrender.com" target="_blank" rel="noopener" class="open-full-btn">
+        Open Full MedCompare ↗
+      </a>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

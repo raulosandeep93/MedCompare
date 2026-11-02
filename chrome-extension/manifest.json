@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "MedCompare — Medicine Price Scanner",
+  "short_name": "MedCompare",
+  "version": "1.0.0",
+  "description": "Instantly compare medicine prices across Apollo, PharmEasy, Tata 1mg, Zepto, Netmeds & more while browsing any pharmacy website.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MedCompare — Compare Prices",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.apollopharmacy.in/*",
+        "*://*.pharmeasy.in/*",
+        "*://*.1mg.com/*",
+        "*://*.netmeds.com/*",
+        "*://*.zepto.com/*",
+        "*://*.amazon.in/*",
+        "*://*.truemeds.in/*",
+        "*://*.platinumrx.in/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://medcompare-lac3.onrender.com/*",
+    "*://*.apollopharmacy.in/*",
+    "*://*.pharmeasy.in/*",
+    "*://*.1mg.com/*",
+    "*://*.netmeds.com/*",
+    "*://*.zepto.com/*",
+    "*://*.amazon.in/*",
+    "*://*.truemeds.in/*",
+    "*://*.platinumrx.in/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

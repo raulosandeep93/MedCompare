@@ -13,7 +13,15 @@ const ORDERED_PLATFORMS = [
   'amazon'
 ];
 
-export default function ComparisonMatrix({ data, pincode, city, platformAvailability, onOpenPincode, onOpenReportIssue }) {
+export default function ComparisonMatrix({
+  data,
+  pincode,
+  city,
+  platformAvailability,
+  onOpenPincode,
+  onOpenReportIssue,
+  onSwitchToGenerics
+}) {
   const [viewMode, setViewMode] = useState('carousel'); // 'carousel' | 'table'
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'quick' | 'discount'
   const [sortMode, setSortMode] = useState('price-low'); // 'price-low' | 'speed' | 'default'
@@ -367,7 +375,12 @@ export default function ComparisonMatrix({ data, pincode, city, platformAvailabi
               type="button"
               className="scb-action-btn"
               onClick={() => {
-                document.getElementById('generic-substitutes-section')?.scrollIntoView({ behavior: 'smooth' });
+                if (onSwitchToGenerics) {
+                  onSwitchToGenerics();
+                }
+                setTimeout(() => {
+                  document.getElementById('generic-substitutes-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 50);
               }}
             >
               <span>View Generics ({data.genericSubstitutes.length}) & Annual Savings</span>

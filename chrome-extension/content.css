@@ -1,0 +1,598 @@
+/* ============================================================
+   MedCompare Chrome Extension — Content Styles
+   Scoped to #mc-ext-* to avoid conflicts with host page styles
+   ============================================================ */
+
+/* ── Floating Trigger Button ── */
+#mc-ext-trigger {
+  position: fixed;
+  bottom: 80px;
+  right: -200px;
+  z-index: 2147483640;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 11px 18px 11px 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.45), 0 2px 8px rgba(0,0,0,0.2);
+  transition: right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#mc-ext-trigger.mc-visible {
+  right: 20px;
+}
+
+#mc-ext-trigger:hover {
+  transform: scale(1.05) translateY(-1px);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.55), 0 3px 12px rgba(0,0,0,0.25);
+  background: linear-gradient(135deg, #0ea5e9, #10b981);
+}
+
+#mc-ext-trigger:active {
+  transform: scale(0.97);
+}
+
+.mc-trigger-logo {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.mc-trigger-text {
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.mc-trigger-badge {
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* ── Sidebar Panel ── */
+#mc-ext-sidebar {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  max-width: 95vw;
+  height: 100dvh;
+  z-index: 2147483641;
+  transition: right 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  pointer-events: none;
+}
+
+#mc-ext-sidebar.mc-open {
+  right: 0;
+  pointer-events: all;
+}
+
+.mc-sidebar-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.mc-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.mc-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mc-brand-logo {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.mc-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.mc-brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.mc-brand-tagline {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.mc-sidebar-close {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mc-sidebar-close:hover {
+  background: rgba(255,255,255,0.15);
+  color: #f1f5f9;
+}
+
+/* ── Body ── */
+.mc-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  padding: 0;
+}
+
+.mc-sidebar-body::-webkit-scrollbar { width: 4px; }
+.mc-sidebar-body::-webkit-scrollbar-track { background: transparent; }
+.mc-sidebar-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+
+/* ── Idle State ── */
+.mc-idle-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 12px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.mc-idle-icon {
+  font-size: 32px;
+}
+
+/* ── Loading State ── */
+.mc-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.mc-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(16, 185, 129, 0.15);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: mc-spin 0.8s linear infinite;
+}
+
+@keyframes mc-spin {
+  to { transform: rotate(360deg); }
+}
+
+.mc-loading-med {
+  font-size: 14px;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.mc-loading-med strong {
+  color: #10b981;
+}
+
+.mc-loading-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.mc-loading-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.mc-plat-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  color: #94a3b8;
+  animation: mc-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mc-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ── Error State ── */
+.mc-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.mc-error-icon {
+  font-size: 32px;
+}
+
+.mc-error-msg {
+  font-size: 13px;
+  color: #f87171;
+  margin: 0;
+}
+
+.mc-error-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.mc-open-link {
+  display: inline-block;
+  margin-top: 4px;
+  color: #10b981;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mc-open-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Results ── */
+.mc-results-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mc-medicine-header {
+  padding: 16px 18px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.mc-med-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mc-med-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mc-med-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0 0 3px 0;
+  line-height: 1.3;
+}
+
+.mc-med-sub {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ── Winner Bar ── */
+.mc-winner-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: rgba(16, 185, 129, 0.1);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.mc-winner-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.mc-winner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mc-winner-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mc-winner-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.mc-winner-unit {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* ── Generic Bar ── */
+.mc-generic-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 18px;
+  background: rgba(139, 92, 246, 0.08);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.mc-generic-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.mc-generic-bar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mc-generic-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mc-generic-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.mc-generic-save {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-top: 2px;
+}
+
+/* ── Platform List Header ── */
+.mc-platform-list-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 18px;
+  background: rgba(255,255,255,0.04);
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Platform Rows ── */
+.mc-platform-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mc-platform-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.15s ease;
+}
+
+.mc-platform-row:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.mc-platform-row.mc-best {
+  background: rgba(16, 185, 129, 0.07);
+  border-left: 3px solid #10b981;
+}
+
+.mc-platform-row.mc-unavailable {
+  opacity: 0.4;
+}
+
+.mc-plat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mc-plat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mc-plat-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.mc-plat-unit {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.mc-plat-na {
+  font-size: 11px;
+  color: #475569;
+  margin-left: auto;
+}
+
+/* ── Price Column ── */
+.mc-plat-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.mc-plat-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.mc-plat-discount {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 700;
+}
+
+.mc-plat-delivery {
+  font-size: 10px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* ── Badges ── */
+.mc-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.mc-badge-green {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mc-badge-amber {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ── Buy Link ── */
+.mc-buy-link {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  text-decoration: none;
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  transition: all 0.15s ease;
+}
+
+.mc-buy-link:hover {
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+/* ── CTA Button ── */
+.mc-full-compare-btn {
+  display: block;
+  margin: 16px 18px;
+  padding: 13px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 12px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.mc-full-compare-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ── Footer Note ── */
+.mc-footer-note {
+  text-align: center;
+  font-size: 10px;
+  color: #334155;
+  padding: 0 18px 20px;
+}
+
+/* ── Body scroll lock (when sidebar is open) ── */
+body.mc-sidebar-open {
+  overflow: hidden;
+}
+

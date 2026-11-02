@@ -16,7 +16,14 @@ MedCompare is a fully functioning, responsive web application comparing 8 pharma
 ---
 
 ## ✅ Recently Completed
-1. **Live Community Feature Suggestions & Real-Time Upvoting Roadmap (`v1.7.0`)**:
+1. **Interactive 3-Card Result Hub (`v1.8.0`)**:
+   - Replaced long vertical scrolling with an interactive 3-card hub ([`ResultHubNav.jsx`](file:///home/anisha/Desktop/Sandeep/MedCompare/client/src/components/ResultHubNav.jsx)) allowing users to tap between Store Comparison, Generic Substitutes, and Medicine Info & Safety.
+   - Built physical visual bridge with downward connector notches (`▼`), ordinal tab labels (`TAB 1`, `TAB 2`, `TAB 3`), animated live pulse badges (`● VIEWING THIS SECTION`), and explicit action button pills (`Switch to Generics →`).
+   - Added in-situ visual connector banner directly underneath the tab cards highlighting the active section with a click hint.
+   - Live preview micro-stats on each card showing lowest price, fastest SLA, generic savings %, and clinical salt information.
+   - Built a view mode toggle letting users choose between single-section focused view and all-in-one stacked view.
+   - Linked generic callout banner directly to the Generics & Savings tab with automatic smooth focus.
+2. **Live Community Feature Suggestions & Real-Time Upvoting Roadmap (`v1.7.0`)**:
    - Cleaned mock / placeholder ideas (`COMMUNITY_IDEAS`) and fake vote numbers from `SuggestFeatureModal.jsx`.
    - Built server-side persistent storage in `server/src/services/suggestionService.js` writing to `server/data/feature_suggestions.json`.
    - Exposed API endpoints: `GET /api/feature-suggestions`, `POST /api/feature-suggestions`, and `POST /api/feature-suggestions/:id/vote`.

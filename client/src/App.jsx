@@ -11,6 +11,7 @@ import ChangelogModal from './components/ChangelogModal';
 import WelcomeGuideModal from './components/WelcomeGuideModal';
 
 import MedicineInfoPanel from './components/MedicineInfoPanel';
+import ResultHubNav from './components/ResultHubNav';
 import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation, getPreciseLocation } from './utils/api';
 import { ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
@@ -50,6 +51,7 @@ export default function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeResultSection, setActiveResultSection] = useState('compare'); // 'compare' | 'generics' | 'info' | 'all'
 
   // Recent searches – persisted in localStorage, capped at 5
   const [popularMedicines, setPopularMedicines] = useState(() => {
@@ -218,6 +220,7 @@ export default function App() {
     try {
       const result = await searchMedicines(q, targetPin);
       setData(result);
+      setActiveResultSection('compare');
       recordSearch(q);
       deriveAvailabilityFromData(result);
     } catch (err) {
@@ -245,6 +248,7 @@ export default function App() {
     try {
       const result = await searchByComposition(ingredients, targetPin, { exactMatch });
       setData(result);
+      setActiveResultSection('compare');
     } catch (err) {
       console.error('Composition search error:', err);
       setError('Unable to search formulations from pharmacy partners. Please try again.');
@@ -369,20 +373,30 @@ export default function App() {
           </div>
         )}
 
-        {/* Comparison Matrix Display */}
+        {/* Comparison Matrix & Interactive Hub Display */}
         {!loading && data && (
           <>
-            <ComparisonMatrix
+            <ResultHubNav
               data={data}
-              pincode={pincode}
-              city={city}
-              platformAvailability={platformAvailability}
-              onOpenPincode={() => setIsPincodeModalOpen(true)}
-              onOpenReportIssue={handleOpenReportIssue}
+              activeTab={activeResultSection}
+              onChangeTab={setActiveResultSection}
             />
 
-            {/* Generic Substitutes & Chronic Savings Calculator */}
-            {data.genericSubstitutes && data.genericSubstitutes.length > 0 && (
+            {/* Section 1: Store Price Comparison */}
+            {(activeResultSection === 'compare' || activeResultSection === 'all') && (
+              <ComparisonMatrix
+                data={data}
+                pincode={pincode}
+                city={city}
+                platformAvailability={platformAvailability}
+                onOpenPincode={() => setIsPincodeModalOpen(true)}
+                onOpenReportIssue={handleOpenReportIssue}
+                onSwitchToGenerics={() => setActiveResultSection('generics')}
+              />
+            )}
+
+            {/* Section 2: Generic Substitutes & Chronic Savings Calculator */}
+            {(activeResultSection === 'generics' || activeResultSection === 'all') && data.genericSubstitutes && data.genericSubstitutes.length > 0 && (
               <SubstituteSection
                 substitutes={data.genericSubstitutes}
                 brandItem={data.comparison?.lowestUnitPrice || Object.values(data.platforms || {}).find(p => p?.topItem)?.topItem}
@@ -390,8 +404,8 @@ export default function App() {
               />
             )}
 
-            {/* Medicine Information Panel — uses, side effects, warnings */}
-            {data.medicineInfo && (
+            {/* Section 3: Medicine Information Panel — uses, side effects, warnings */}
+            {(activeResultSection === 'info' || activeResultSection === 'all') && data.medicineInfo && (
               <MedicineInfoPanel medicineInfo={data.medicineInfo} />
             )}
           </>
