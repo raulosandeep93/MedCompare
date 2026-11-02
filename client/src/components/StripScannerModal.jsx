@@ -36,6 +36,7 @@ export default function StripScannerModal({ isOpen, onClose, onDetectedMedicine 
   const [result, setResult] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   if (!isOpen) return null;
 
@@ -125,7 +126,7 @@ export default function StripScannerModal({ isOpen, onClose, onDetectedMedicine 
         </div>
 
         <div className="modal-body">
-          {/* Dropzone */}
+          {/* Gallery / File picker */}
           <input
             type="file"
             ref={fileInputRef}
@@ -133,6 +134,36 @@ export default function StripScannerModal({ isOpen, onClose, onDetectedMedicine 
             accept="image/*"
             onChange={handleFileChange}
           />
+
+          {/* Direct Camera capture for mobile phones */}
+          <input
+            type="file"
+            ref={cameraInputRef}
+            style={{ display: 'none' }}
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+          />
+
+          {/* Quick Action Buttons for Mobile & Desktop */}
+          <div className="scanner-action-buttons">
+            <button
+              type="button"
+              className="scanner-btn-camera"
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              <Camera size={18} />
+              <span>Take Photo (Camera)</span>
+            </button>
+            <button
+              type="button"
+              className="scanner-btn-gallery"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadCloud size={18} />
+              <span>Upload Photo / File</span>
+            </button>
+          </div>
 
           <div
             className={`dropzone-area ${dragActive ? 'drag-active' : ''}`}

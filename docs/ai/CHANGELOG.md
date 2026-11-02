@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-11-02
+
+### Added
+- **First-Time User Welcome & Onboarding Guide Modal (`WelcomeGuideModal.jsx`)**: Automatic first-visit modal explaining platform purpose, 3-step usage guide, core benefits (10-min fast delivery, up to 70% generic savings, true unit prices), sample 1-tap searches, and a "Do not show this further" preference checkbox. Also adds a persistent "How it works" button in `Header.jsx`.
+- **Chronic Condition Annual Savings Calculator (`SubstituteSection.jsx`)**: Interactive 1-tab/day vs 2-tabs/day dosage toggle calculating yearly family savings (₹/year) when switching from expensive brand medicines to bio-equivalent generics. Includes side-by-side branded vs generic breakdown and CDSCO/WHO-GMP trust badges.
+- **High-Impact Generic Substitute Callout Banner (`ComparisonMatrix.jsx`)**: Prominent green gradient banner placed directly above the store comparison carousel highlighting savings % and providing 1-click smooth jump to generic alternatives.
+- **1-Click Quick-Select Category Bubbles (`SearchSection.jsx`)**: Horizontal scrollable bubbles for top Indian chronic & acute conditions (BP, Diabetes, GERD, Fever, Cholesterol, Calcium, Allergy, Antibiotic) with 1-tap instant search execution.
+- **Native Smartphone Camera Strip Capture (`StripScannerModal.jsx`)**: Added direct camera capture input (`capture="environment"`) with dual "Take Photo (Camera)" and "Upload File" buttons so mobile users don't need to transfer files to desktop.
+
+---
+
 ## 2026-10-05
 
 ### Fixed

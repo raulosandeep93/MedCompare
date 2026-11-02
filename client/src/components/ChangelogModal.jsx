@@ -1,11 +1,40 @@
 import React from 'react';
-import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck, Search, MapPin, Mail, SlidersHorizontal, Wrench, Bot } from 'lucide-react';
+import { X, History, Sparkles, CheckCircle2, Zap, Camera, FlaskConical, Layers, ShieldCheck, Search, MapPin, Mail, SlidersHorizontal, Wrench, Bot, Calculator, TrendingDown, HelpCircle } from 'lucide-react';
 
 const RELEASES = [
   {
+    version: 'v1.5.0',
+    date: 'November 2, 2026',
+    isLatest: true,
+    tag: 'Major Feature',
+    title: 'First-Time Welcome Guide, Chronic Refill Annual Calculator & Category Bubbles',
+    highlights: [
+      {
+        icon: <HelpCircle size={15} color="#10b981" />,
+        text: 'First-Time User Welcome & Onboarding Guide: Automatic introduction explaining MedCompare\'s mission, 3-step usage guide, key benefits, sample 1-tap searches, and a "Do not show this further" preference checkbox (plus a permanent "How it works" header button).'
+      },
+      {
+        icon: <Calculator size={15} color="#10b981" />,
+        text: 'Chronic Refill Annual Savings Calculator: Interactive 1-tab/day vs 2-tabs/day dosage toggle showing total yearly family savings (₹/year) when switching from branded medicines to certified generics.'
+      },
+      {
+        icon: <Sparkles size={15} color="#3b82f6" />,
+        text: 'Prominent Generic Callout Banner: Direct high-visibility banner above the comparison matrix highlighting exact generic alternatives and direct jump to verified savings.'
+      },
+      {
+        icon: <Search size={15} color="#f59e0b" />,
+        text: '1-Click Quick-Select Category Bubbles: Instant access to top chronic and acute conditions (BP, Diabetes, GERD, Fever, Cholesterol, Calcium, Allergy, Antibiotic) directly beneath the search bar.'
+      },
+      {
+        icon: <Camera size={15} color="#8b5cf6" />,
+        text: 'Native Mobile Camera Capture: Dedicated "Take Photo with Camera" option directly launching device camera viewfinder on smartphones for effortless strip scanning.'
+      }
+    ]
+  },
+  {
     version: 'v1.4.2',
     date: 'October 5, 2026',
-    isLatest: true,
+    isLatest: false,
     tag: 'UX Improvement',
     title: 'Platform Availability Shown Inline on Cards',
     highlights: [

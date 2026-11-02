@@ -6,17 +6,31 @@
 ---
 
 ## 📅 Last Updated
-**2026-10-05**
+**2026-11-02**
 
 ---
 
 ## 📊 Current Project Status
-MedCompare is a fully functioning, responsive web application comparing 8 pharmacy platforms in India. It includes live search autocomplete, automatic browser geolocation with Indian PIN code reverse-geocoding, packaging photo OCR scanning, generic substitution recommendations, side-by-side card/table comparison, and verified email issue reporting.
+MedCompare is a fully functioning, responsive web application comparing 8 pharmacy platforms in India. It includes live search autocomplete, 1-click condition category bubbles, chronic refill annual rupee savings calculator, prominent generic substitution callouts, smartphone camera strip scanning, automatic browser geolocation with Indian PIN code reverse-geocoding, side-by-side card/table comparison, and verified email issue reporting.
 
 ---
 
 ## ✅ Recently Completed
-1. **Removed Standalone Platform Availability Bar; Moved Status Inline to Carousel Cards**:
+1. **First-Time User Welcome & Onboarding Guide Modal (`WelcomeGuideModal.jsx`)**:
+   - Automatic onboarding modal appearing on first landing explaining what MedCompare is, why pharmacies charge different prices, 3-step usage workflow, key benefits (10-min fast delivery, up to 70% generic savings, unit prices, 100% free/neutral), and 1-tap sample searches.
+   - Includes "Do not show this further" preference checkbox persisted to `localStorage` (`medcompare_onboarding_dismissed`).
+   - Added permanent "How it works" button in `Header.jsx` to let users reopen the guide at any time.
+2. **Chronic Condition Annual Savings Calculator (`SubstituteSection.jsx`)**:
+   - Interactive 1-tab/day vs 2-tabs/day dosage toggle calculating yearly family savings (₹/year) when switching from expensive brand medicines to bio-equivalent generics.
+   - Breakdown of Branded annual cost vs Generic annual cost vs Net annual savings in your pocket.
+   - Comprehensive WHO-GMP & CDSCO bioequivalence reassurance trust badges.
+2. **High-Impact Generic Substitute Callout Banner (`ComparisonMatrix.jsx`)**:
+   - Prominent banner rendered directly above the pharmacy comparison results highlighting exact generic alternatives, savings percentage, and 1-click smooth scrolling to the generic section.
+3. **1-Click Quick-Select Health Condition Bubbles (`SearchSection.jsx`)**:
+   - Beautiful, scrollable category bubbles under the search bar for top Indian conditions: Blood Pressure (Telma 40), Diabetes (Glycomet GP 2), Acidity/GERD (Pan 40), Fever & Pain (Dolo 650), Cholesterol (Rosuvas 10), Bones & Calcium (Shelcal 500), Allergy & Cold (Montair LC), and Antibiotics (Augmentin 625 Duo).
+4. **Native Mobile Camera Photo Capture (`StripScannerModal.jsx`)**:
+   - Added `capture="environment"` camera input alongside file picker, allowing smartphones to immediately launch the native camera viewfinder with 1 tap.
+5. **Removed Standalone Platform Availability Bar; Moved Status Inline to Carousel Cards**:
    - Removed `PlatformAvailabilityBar` component import/render from `App.jsx` and all related CSS from `index.css` to reclaim vertical space.
    - Threaded `platformAvailability` prop through `ComparisonMatrix` → `ComparisonCard`.
    - In `ComparisonCard`, `platformAvailable === false` now renders a "Not available for your location" state (red `MapPin` icon, dashed card border) clearly distinguishing delivery-unavailability from medicine-not-found.

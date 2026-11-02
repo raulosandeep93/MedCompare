@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Camera, Sparkles, FlaskConical, Plus, X, CheckCircle2, RotateCcw } from 'lucide-react';
 import { fetchSuggestions } from '../utils/api';
 import SearchSuggestions from './SearchSuggestions';
@@ -20,6 +20,17 @@ const COMMON_SALTS = [
   'Serratiopeptidase'
 ];
 
+const QUICK_CATEGORIES = [
+  { label: 'Blood Pressure', medicine: 'Telma 40', icon: '🩺', badge: 'BP' },
+  { label: 'Diabetes', medicine: 'Glycomet GP 2', icon: '🩸', badge: 'Sugar' },
+  { label: 'Acidity & Gas', medicine: 'Pan 40', icon: '💊', badge: 'GERD' },
+  { label: 'Fever & Pain', medicine: 'Dolo 650', icon: '🤒', badge: 'Pain' },
+  { label: 'Cholesterol', medicine: 'Rosuvas 10', icon: '🫀', badge: 'Lipid' },
+  { label: 'Bones & Calcium', medicine: 'Shelcal 500', icon: '🦴', badge: 'Vitamins' },
+  { label: 'Allergy & Cold', medicine: 'Montair LC', icon: '🤧', badge: 'Allergy' },
+  { label: 'Antibiotic', medicine: 'Augmentin 625 Duo', icon: '🛡️', badge: 'Infection' }
+];
+
 export default function SearchSection({
   searchMode = 'name',
   setSearchMode,
@@ -30,7 +41,7 @@ export default function SearchSection({
   onOpenScanner,
   loading,
   popularMedicines,
-  popularCompositions = [],
+  _popularCompositions = [],
   activeMedicine,
   activeIngredients = []
 }) {
@@ -267,6 +278,37 @@ export default function SearchSection({
                 onClose={() => setShowNameSuggestions(false)}
                 mode="name"
               />
+            </div>
+
+            {/* 1-Click Quick Category Bubbles */}
+            <div className="quick-categories-container">
+              <div className="quick-categories-label">
+                <span>Top Health Conditions & Daily Medicines:</span>
+              </div>
+              <div className="quick-categories-scroll">
+                {QUICK_CATEGORIES.map((cat) => {
+                  const isActive = activeMedicine?.toLowerCase() === cat.medicine.toLowerCase() ||
+                                   query?.trim().toLowerCase() === cat.medicine.toLowerCase();
+                  return (
+                    <button
+                      key={cat.medicine}
+                      type="button"
+                      className={`category-bubble-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setQuery(cat.medicine);
+                        onSearch(cat.medicine);
+                      }}
+                      title={`Compare prices for ${cat.medicine} (${cat.label})`}
+                    >
+                      <span className="cat-icon">{cat.icon}</span>
+                      <div className="cat-text-group">
+                        <span className="cat-label">{cat.label}</span>
+                        <span className="cat-medicine">{cat.medicine}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Recent searches chips – only shown after the user has searched */}

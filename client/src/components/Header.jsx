@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pill, MapPin, Moon, Sun, AlertCircle, Lightbulb, History } from 'lucide-react';
+import { Pill, MapPin, Moon, Sun, AlertCircle, Lightbulb, History, HelpCircle } from 'lucide-react';
 
 export default function Header({
   pincode,
@@ -9,6 +9,7 @@ export default function Header({
   onOpenReportIssue,
   onOpenSuggestFeature,
   onOpenChangelogs,
+  onOpenWelcomeGuide,
   theme,
   onToggleTheme
 }) {
@@ -66,7 +67,18 @@ export default function Header({
             <span>Suggest features</span>
           </button>
 
-          {/* 4. Changelogs */}
+          {/* 4. How It Works Guide */}
+          <button
+            className="header-nav-btn guide"
+            onClick={onOpenWelcomeGuide}
+            title="Learn how MedCompare works and how to save"
+            id="how-it-works-btn"
+          >
+            <HelpCircle size={15} color="#10b981" />
+            <span>How it works</span>
+          </button>
+
+          {/* 5. Changelogs */}
           <button
             className="header-nav-btn changelog"
             onClick={onOpenChangelogs}

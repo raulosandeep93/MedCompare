@@ -8,10 +8,11 @@ import StripScannerModal from './components/StripScannerModal';
 import ReportIssueModal from './components/ReportIssueModal';
 import SuggestFeatureModal from './components/SuggestFeatureModal';
 import ChangelogModal from './components/ChangelogModal';
+import WelcomeGuideModal from './components/WelcomeGuideModal';
 
 import MedicineInfoPanel from './components/MedicineInfoPanel';
 import { searchMedicines, searchByComposition, getPopularCompositions, checkPlatformAvailability, reverseGeocodeLocation, getPreciseLocation } from './utils/api';
-import { Pill, ShieldCheck, Zap, TrendingDown } from 'lucide-react';
+import { ShieldCheck, Zap, TrendingDown } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState(() => {
@@ -67,10 +68,17 @@ export default function App() {
   const [reportModalData, setReportModalData] = useState({ medicineName: '', platform: '' });
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
   const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(() => {
+    try {
+      return localStorage.getItem('medcompare_onboarding_dismissed') !== 'true';
+    } catch {
+      return true;
+    }
+  });
 
   // Platform delivery availability for current pincode
   const [platformAvailability, setPlatformAvailability] = useState({});
-  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [_availabilityLoading, setAvailabilityLoading] = useState(false);
 
   // Sync theme attribute to document
   useEffect(() => {
@@ -245,6 +253,20 @@ export default function App() {
     }
   };
 
+  const handleCloseWelcomeModal = (doNotShowAgain) => {
+    setIsWelcomeModalOpen(false);
+    if (doNotShowAgain) {
+      try {
+        localStorage.setItem('medcompare_onboarding_dismissed', 'true');
+      } catch {}
+    }
+  };
+
+  const handleSelectSampleFromWelcome = (medicineName) => {
+    setQuery(medicineName);
+    executeSearch(medicineName, pincode);
+  };
+
   const handlePincodeChange = (newPin, newCity, meta = {}) => {
     setPincode(newPin);
     if (newCity) setCity(newCity);
@@ -296,6 +318,7 @@ export default function App() {
         onOpenReportIssue={() => handleOpenReportIssue()}
         onOpenSuggestFeature={() => setIsSuggestModalOpen(true)}
         onOpenChangelogs={() => setIsChangelogModalOpen(true)}
+        onOpenWelcomeGuide={() => setIsWelcomeModalOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -358,14 +381,18 @@ export default function App() {
               onOpenReportIssue={handleOpenReportIssue}
             />
 
+            {/* Generic Substitutes & Chronic Savings Calculator */}
+            {data.genericSubstitutes && data.genericSubstitutes.length > 0 && (
+              <SubstituteSection
+                substitutes={data.genericSubstitutes}
+                brandItem={data.comparison?.lowestUnitPrice || Object.values(data.platforms || {}).find(p => p?.topItem)?.topItem}
+                searchedMedicine={data.query}
+              />
+            )}
+
             {/* Medicine Information Panel — uses, side effects, warnings */}
             {data.medicineInfo && (
               <MedicineInfoPanel medicineInfo={data.medicineInfo} />
-            )}
-
-            {/* Generic Substitutes Section */}
-            {data.genericSubstitutes && data.genericSubstitutes.length > 0 && (
-              <SubstituteSection substitutes={data.genericSubstitutes} />
             )}
           </>
         )}
@@ -508,6 +535,12 @@ export default function App() {
       <ChangelogModal
         isOpen={isChangelogModalOpen}
         onClose={() => setIsChangelogModalOpen(false)}
+      />
+
+      <WelcomeGuideModal
+        isOpen={isWelcomeModalOpen}
+        onClose={handleCloseWelcomeModal}
+        onSelectSample={handleSelectSampleFromWelcome}
       />
     </div>
   );

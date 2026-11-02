@@ -19,6 +19,8 @@
 
 - [ ] **Expanded Offline Indian PIN Code Pre-Cache**:
   - Add more Tier-1 and Tier-2 Indian city postal codes to the internal lookup table in [`server/src/services/pincodeService.js`](file:///home/hrishi/Desktop/Sandeep/MedCompare/server/src/services/pincodeService.js) to avoid roundtrip latency to OpenStreetMap Nominatim under high load.
+- [ ] **PWA / Android Wrapper (Google Play Store packaging)**:
+  - Add web app manifest (`manifest.json`) and service worker for "Add to Home Screen" on Android browsers. Once web traction is proven, package via Capacitor/TWA for the Google Play Store.
 - [ ] **URL Shareable Query State**:
   - Sync active search query and PIN code to browser URL search parameters (`?q=dolo+650&pin=560001`) so users can bookmark and share live comparison links directly.
 - [ ] **Out-of-Stock Filter Toggle**:

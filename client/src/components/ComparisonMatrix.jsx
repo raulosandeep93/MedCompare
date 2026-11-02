@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ComparisonCard from './ComparisonCard';
-import { Award, Zap, Tag, Table, MapPin, FlaskConical, ChevronLeft, ChevronRight, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Award, Zap, Tag, Table, MapPin, FlaskConical, ChevronLeft, ChevronRight, SlidersHorizontal, ArrowUpDown, Sparkles, ArrowDown } from 'lucide-react';
 
 const ORDERED_PLATFORMS = [
   'apollo',
@@ -343,6 +343,39 @@ export default function ComparisonMatrix({ data, pincode, city, platformAvailabi
           )}
         </div>
       </div>
+
+      {/* ── High-Impact Generic Substitute Callout Banner ── */}
+      {data.genericSubstitutes && data.genericSubstitutes.length > 0 && (
+        <div className="substitute-callout-banner">
+          <div className="scb-left">
+            <div className="scb-badge">
+              <Sparkles size={14} />
+              <span>Smart Generic Substitute Available</span>
+            </div>
+            <div className="scb-main-text">
+              <h3 className="scb-title">
+                Get identical generic for <strong>"{data.query}"</strong> from <strong>₹{data.genericSubstitutes[0].unitPrice}/{data.genericSubstitutes[0].unitType || 'tablet'}</strong>
+              </h3>
+              <p className="scb-desc">
+                Save <strong>{data.genericSubstitutes[0].savingsVsBrand || data.genericSubstitutes[0].discountPercent || 65}%</strong> vs branded price with CDSCO-certified bio-equivalent <em>{data.genericSubstitutes[0].name}</em>.
+              </p>
+            </div>
+          </div>
+
+          <div className="scb-right">
+            <button
+              type="button"
+              className="scb-action-btn"
+              onClick={() => {
+                document.getElementById('generic-substitutes-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <span>View Generics ({data.genericSubstitutes.length}) & Annual Savings</span>
+              <ArrowDown size={15} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Carousel View Mode */}
       {viewMode === 'carousel' && (
